@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, LogBox, View } from 'react-native';
+
 import {
   useFonts,
   BeVietnamPro_400Regular,
@@ -16,6 +17,10 @@ import {
 import { useAuthStore } from '@/stores/auth.store';
 import { Toast } from '@/components/ui/Toast';
 import { initI18n } from '@/i18n';
+
+LogBox.ignoreLogs([
+  'ImageBackground is deprecated',
+]);
 
 export default function RootLayout() {
   const router = useRouter();
