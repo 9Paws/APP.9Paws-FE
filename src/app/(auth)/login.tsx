@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { Mail, Lock } from 'lucide-react-native';
+import { AlertCircle, Lock, Mail, X } from 'lucide-react-native';
 import type { AxiosError } from 'axios';
 
 import { loginSchema, type LoginFormData } from '@/lib/validators';
@@ -31,6 +31,7 @@ export default function LoginScreen() {
   const { setAuth } = useAuthStore();
   const showToast = useToastStore((state) => state.showToast);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     control,
@@ -43,6 +44,7 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       const res = await authService.login(data);
       await setAuth(res.data);
@@ -50,11 +52,12 @@ export default function LoginScreen() {
       router.replace('/(tabs)' as any);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
-      showToast({
-        type: 'error',
-        title: t('common.error'),
-        message: error.response?.data?.message ?? t('auth.login.loginFailed'),
-      });
+      const serverMsg = error.response?.data?.message;
+      setErrorMessage(
+        serverMsg && !serverMsg.toLowerCase().includes('bad credentials')
+          ? serverMsg
+          : t('auth.login.loginFailed')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +103,23 @@ export default function LoginScreen() {
               {t('auth.login.subtitle')}
             </Text>
           </View>
+
+          {/* Inline error banner on login failure */}
+          {errorMessage && (
+            <View className="mb-5 flex-row items-center rounded-2xl bg-rose-50 border border-rose-200/80 p-3.5 gap-x-2.5">
+              <AlertCircle size={18} color="#E11D48" />
+              <Text className="flex-1 text-xs font-semibold text-rose-700 leading-4 font-sans">
+                {errorMessage}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setErrorMessage(null)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                className="p-1"
+              >
+                <X size={15} color="#E11D48" />
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Form */}
           <View className="gap-y-4">
@@ -175,7 +195,7 @@ export default function LoginScreen() {
               showToast({
                 type: 'info',
                 title: 'Google Sign-In',
-                message: 'Tính năng đăng nhập với Google đang được tích hợp.',
+                message: t('auth.login.googleComingSoon'),
               });
             }}
           />

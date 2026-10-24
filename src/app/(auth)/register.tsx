@@ -259,7 +259,7 @@ export default function RegisterScreen() {
               showToast({
                 type: 'info',
                 title: 'Google Sign-In',
-                message: 'Tính năng đăng ký với Google đang được tích hợp.',
+                message: t('auth.register.googleComingSoon'),
               });
             }}
           />

@@ -7,10 +7,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useToastStore } from '@/stores/toast.store';
 
 export const Toast: React.FC = () => {
   const { visible, type, title, message, hideToast } = useToastStore();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   const translateY = useMemo(() => new Animated.Value(-120), []);
@@ -66,7 +68,7 @@ export const Toast: React.FC = () => {
       icon: <CheckCircle2 size={20} color="#059669" />,
       titleColor: 'text-emerald-900',
       textColor: 'text-emerald-800',
-      defaultTitle: 'Thành công',
+      defaultTitle: t('common.success'),
     },
     error: {
       bg: 'bg-rose-50',
@@ -74,7 +76,7 @@ export const Toast: React.FC = () => {
       icon: <AlertCircle size={20} color="#E11D48" />,
       titleColor: 'text-rose-900',
       textColor: 'text-rose-800',
-      defaultTitle: 'Lỗi',
+      defaultTitle: t('common.error'),
     },
     info: {
       bg: 'bg-amber-50',
@@ -82,7 +84,7 @@ export const Toast: React.FC = () => {
       icon: <Info size={20} color="#D97706" />,
       titleColor: 'text-amber-900',
       textColor: 'text-amber-800',
-      defaultTitle: 'Thông báo',
+      defaultTitle: t('common.notice'),
     },
   }[type];
 

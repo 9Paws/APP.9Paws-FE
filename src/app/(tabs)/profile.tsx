@@ -293,7 +293,7 @@ export default function ProfileScreen() {
                 showToast({
                   type: 'info',
                   title: t('profile.currency'),
-                  message: 'Tính năng chuyển đổi đơn vị tiền tệ đang được hoàn thiện.',
+                  message: t('profile.currencyComingSoon'),
                 })
               }
             />
@@ -336,7 +336,7 @@ export default function ProfileScreen() {
                 showToast({
                   type: 'success',
                   title: t('profile.feedback'),
-                  message: 'Cảm ơn bạn! Mọi ý kiến xin gửi về support@9paws.com',
+                  message: t('profile.feedbackToast'),
                 })
               }
             />
@@ -351,7 +351,7 @@ export default function ProfileScreen() {
                 showToast({
                   type: 'info',
                   title: '9Paws v1.0.0 ✨',
-                  message: 'Sổ tay chi tiêu ấm cúng và tự động hoá quyết toán hoá đơn nhóm.',
+                  message: t('profile.aboutSub'),
                 })
               }
             />
