@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Image,
   Modal,
+  Platform,
   ScrollView,
   Switch,
   Text,
@@ -14,8 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { getPushPermissions, requestPushPermissions } from '@/services/notification.service';
 import {
   Bell,
+  BellRing,
   Check,
   ChevronRight,
   Clock,
@@ -104,30 +107,11 @@ export default function ProfileScreen() {
 
   const currentLang = (i18n.language as SupportedLanguage) || 'vi';
 
-  const [wallets, setWallets] = useState<WalletItem[]>([
-    {
-      id: '1',
-      name: 'Vietcombank',
-      type: 'bank',
-      balance: 10250000,
-      badge: 'profile.mainBadge',
-    },
-    {
-      id: '2',
-      name: 'Ví MoMo',
-      type: 'wallet',
-      balance: 1200000,
-      badge: 'profile.foodBadge',
-    },
-    {
-      id: '3',
-      name: currentLang === 'vi' ? 'Tiền mặt' : 'Cash',
-      type: 'cash',
-      balance: 1000000,
-    },
-  ]);
+  const [wallets, setWallets] = useState<WalletItem[]>([]);
 
   const [faceIdEnabled, setFaceIdEnabled] = useState(false);
+  const [isBiometricSupported, setIsBiometricSupported] = useState(true);
+  const [pushNotificationEnabled, setPushNotificationEnabled] = useState(false);
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderTime, setReminderTime] = useState('21:00');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -146,9 +130,58 @@ export default function ProfileScreen() {
   const firstName = fullName.split(' ').pop() || 'bạn';
 
   useEffect(() => {
-    getItem(STORAGE_KEYS.BIOMETRIC_ENABLED).then((val) => {
-      setFaceIdEnabled(val === 'true');
+    // Kiểm tra tính sẵn sàng của Face ID / Vân tay
+    const checkBiometrics = async () => {
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        const supported = hasHardware && isEnrolled;
+        setIsBiometricSupported(supported);
+
+        if (!supported) {
+          setFaceIdEnabled(false);
+          await setItem(STORAGE_KEYS.BIOMETRIC_ENABLED, 'false');
+        } else {
+          const val = await getItem(STORAGE_KEYS.BIOMETRIC_ENABLED);
+          setFaceIdEnabled(val === 'true');
+        }
+      } catch {
+        setIsBiometricSupported(false);
+      }
+    };
+
+    // Kiểm tra trạng thái Push Notification
+    const checkPushStatus = async () => {
+      try {
+        if (Platform.OS === 'web') {
+          const val = await getItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED);
+          setPushNotificationEnabled(val === 'true');
+          return;
+        }
+        const granted = await getPushPermissions();
+        setPushNotificationEnabled(granted);
+        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, granted ? 'true' : 'false');
+      } catch {
+        setPushNotificationEnabled(false);
+      }
+    };
+
+    checkBiometrics();
+    checkPushStatus();
+
+    getItem(STORAGE_KEYS.WALLETS).then((val) => {
+      if (val) {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            setWallets(parsed);
+          }
+        } catch {
+          // Ignore parse error
+        }
+      }
     });
+
     getItem(STORAGE_KEYS.REMINDER_ENABLED).then((val) => {
       if (val !== null && val !== undefined) setReminderEnabled(val === 'true');
     });
@@ -158,22 +191,11 @@ export default function ProfileScreen() {
   }, []);
 
   const handleToggleBiometric = async (value: boolean) => {
+    if (!isBiometricSupported) {
+      return;
+    }
+
     if (value) {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-      if (!hasHardware || !isEnrolled) {
-        showToast({
-          type: 'error',
-          title: t('common.notice'),
-          message:
-            currentLang === 'vi'
-              ? 'Thiết bị chưa cài đặt hoặc không hỗ trợ Face ID / Vân tay.'
-              : 'Device does not support or has not enrolled Face ID / Fingerprint.',
-        });
-        return;
-      }
-
       const res = await LocalAuthentication.authenticateAsync({
         promptMessage:
           currentLang === 'vi'
@@ -204,6 +226,60 @@ export default function ProfileScreen() {
           currentLang === 'vi'
             ? 'Đã tắt khóa Face ID / Vân tay.'
             : 'Biometric lock disabled.',
+      });
+    }
+  };
+
+  const handleTogglePushNotification = async (value: boolean) => {
+    if (value) {
+      if (Platform.OS === 'web') {
+        setPushNotificationEnabled(true);
+        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'true');
+        showToast({
+          type: 'success',
+          title: t('common.success'),
+          message:
+            currentLang === 'vi'
+              ? 'Đã bật thông báo thành công!'
+              : 'Push notifications enabled!',
+        });
+        return;
+      }
+
+      const granted = await requestPushPermissions();
+      if (granted) {
+        setPushNotificationEnabled(true);
+        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'true');
+        showToast({
+          type: 'success',
+          title: t('common.success'),
+          message:
+            currentLang === 'vi'
+              ? 'Đã bật thông báo thành công!'
+              : 'Push notifications enabled!',
+        });
+      } else {
+        setPushNotificationEnabled(false);
+        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'false');
+        showToast({
+          type: 'info',
+          title: t('common.notice'),
+          message:
+            currentLang === 'vi'
+              ? 'Vui lòng cấp quyền thông báo trong Cài đặt thiết bị.'
+              : 'Please enable notification permissions in device settings.',
+        });
+      }
+    } else {
+      setPushNotificationEnabled(false);
+      await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'false');
+      showToast({
+        type: 'info',
+        title: t('common.notice'),
+        message:
+          currentLang === 'vi'
+            ? 'Đã tắt nhận thông báo đẩy.'
+            : 'Push notifications disabled.',
       });
     }
   };
@@ -239,12 +315,12 @@ export default function ProfileScreen() {
     });
   };
 
-  const handleCreateWallet = () => {
+  const handleCreateWallet = async () => {
     if (!newWalletName.trim()) {
       showToast({
         type: 'error',
         title: t('common.notice'),
-        message: currentLang === 'vi' ? 'Vui lòng nhập tên nguồn tiền' : 'Please enter source name',
+        message: t('profile.enterSourceNameNotice'),
       });
       return;
     }
@@ -255,17 +331,16 @@ export default function ProfileScreen() {
       type: newWalletType,
       balance: balanceNum,
     };
-    setWallets((prev) => [newSource, ...prev]);
+    const updated = [newSource, ...wallets];
+    setWallets(updated);
+    await setItem(STORAGE_KEYS.WALLETS, JSON.stringify(updated));
     setNewWalletName('');
     setNewWalletBalance('');
     setIsAddWalletModalVisible(false);
     showToast({
       type: 'success',
       title: t('common.success'),
-      message:
-        currentLang === 'vi'
-          ? 'Đã thêm nguồn tiền mới thành công!'
-          : 'Added new money source successfully!',
+      message: t('profile.addSourceSuccess'),
     });
   };
 
@@ -339,7 +414,7 @@ export default function ProfileScreen() {
           </View>
 
           <View className="flex-1">
-            <Text className="text-base font-bold text-text-main font-bold">{fullName} ✨</Text>
+            <Text className="text-base font-bold text-text-main font-bold">{fullName}</Text>
             <Text className="text-xs text-text-muted mt-0.5 font-sans">{email}</Text>
           </View>
 
@@ -370,56 +445,60 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-            {wallets.map((wallet) => (
-              <View
-                key={wallet.id}
-                className="w-40 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mr-3"
-              >
-                <View className="flex-row items-center justify-between mb-3">
-                  {wallet.type === 'bank' && <CreditCard size={18} color="#92400E" />}
-                  {wallet.type === 'wallet' && <QrCode size={18} color="#BE185D" />}
-                  {wallet.type === 'cash' && (
-                    <View className="h-5 w-5 items-center justify-center rounded-md bg-emerald-100">
-                      <Text className="text-xs">💵</Text>
-                    </View>
-                  )}
-                  {wallet.badge ? (
-                    <View className="rounded-full bg-indigo-50 px-2 py-0.5">
-                      <Text className="text-[10px] font-bold text-indigo-600">
-                        {t(wallet.badge as any)}
-                      </Text>
-                    </View>
-                  ) : (
+          {wallets.length === 0 ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setIsAddWalletModalVisible(true)}
+              className="bg-white rounded-3xl p-5 border border-dashed border-gray-200 items-center justify-center shadow-sm"
+            >
+              <View className="h-12 w-12 rounded-full bg-orange-50 items-center justify-center mb-2.5">
+                <Wallet size={22} color="#F15C22" />
+              </View>
+              <Text className="text-sm font-bold text-text-main font-bold">
+                {t('profile.emptyWalletsTitle')}
+              </Text>
+              <Text className="text-xs text-text-muted mt-1 text-center font-sans">
+                {t('profile.emptyWalletsSub')}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+              {wallets.map((wallet) => (
+                <View
+                  key={wallet.id}
+                  className="w-40 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mr-3"
+                >
+                  <View className="flex-row items-center justify-between mb-3">
+                    {wallet.type === 'bank' && <CreditCard size={18} color="#92400E" />}
+                    {wallet.type === 'wallet' && <QrCode size={18} color="#BE185D" />}
+                    {wallet.type === 'cash' && (
+                      <View className="h-5 w-5 items-center justify-center rounded-md bg-emerald-100">
+                        <Text className="text-xs">💵</Text>
+                      </View>
+                    )}
                     <View className="rounded-full bg-orange-50 px-2 py-0.5">
                       <Text className="text-[10px] font-bold text-brand">
                         {wallet.type === 'bank'
-                          ? currentLang === 'vi'
-                            ? 'Ngân hàng'
-                            : 'Bank'
+                          ? t('profile.typeBank')
                           : wallet.type === 'wallet'
-                            ? currentLang === 'vi'
-                              ? 'Ví'
-                              : 'Wallet'
-                            : currentLang === 'vi'
-                              ? 'Tiền mặt'
-                              : 'Cash'}
+                            ? t('profile.typeWallet')
+                            : t('profile.typeCash')}
                       </Text>
                     </View>
-                  )}
+                  </View>
+                  <Text
+                    numberOfLines={1}
+                    className="text-xs text-text-muted font-medium font-sans"
+                  >
+                    {wallet.name}
+                  </Text>
+                  <Text numberOfLines={1} className="mt-1 text-sm font-extrabold text-text-main">
+                    {formatCurrency(wallet.balance)}
+                  </Text>
                 </View>
-                <Text
-                  numberOfLines={1}
-                  className="text-xs text-text-muted font-medium font-sans"
-                >
-                  {wallet.name}
-                </Text>
-                <Text numberOfLines={1} className="mt-1 text-sm font-extrabold text-text-main">
-                  {formatCurrency(wallet.balance)}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         {/* Section: Cài đặt & Bảo mật */}
@@ -432,20 +511,45 @@ export default function ProfileScreen() {
           </View>
 
           <View className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm">
+            {/* Quyền Push Notification */}
             <SettingRow
-              icon={<Fingerprint size={20} color="#8B5CF6" />}
-              iconBgColor="bg-purple-50"
-              title={t('profile.biometric')}
-              subtitle={t('profile.biometricSub')}
+              icon={<BellRing size={20} color="#F97316" />}
+              iconBgColor="bg-orange-50"
+              title={t('profile.pushNotification')}
+              subtitle={t('profile.pushNotificationSub')}
               rightElement={
                 <Switch
-                  value={faceIdEnabled}
-                  onValueChange={handleToggleBiometric}
+                  value={pushNotificationEnabled}
+                  onValueChange={handleTogglePushNotification}
                   trackColor={{ false: '#E5E7EB', true: '#F15C22' }}
                   thumbColor="#FFFFFF"
                 />
               }
             />
+            <View className="h-px bg-gray-100 my-1" />
+
+            {/* Khóa Face ID / Vân tay */}
+            <View style={{ opacity: isBiometricSupported ? 1 : 0.55 }}>
+              <SettingRow
+                icon={<Fingerprint size={20} color={isBiometricSupported ? '#8B5CF6' : '#9CA3AF'} />}
+                iconBgColor={isBiometricSupported ? 'bg-purple-50' : 'bg-gray-100'}
+                title={t('profile.biometric')}
+                subtitle={
+                  isBiometricSupported
+                    ? t('profile.biometricSub')
+                    : t('profile.biometricUnsupported')
+                }
+                rightElement={
+                  <Switch
+                    value={isBiometricSupported && faceIdEnabled}
+                    onValueChange={handleToggleBiometric}
+                    disabled={!isBiometricSupported}
+                    trackColor={{ false: '#E5E7EB', true: '#F15C22' }}
+                    thumbColor="#FFFFFF"
+                  />
+                }
+              />
+            </View>
             <View className="h-px bg-gray-100 my-1" />
 
             <SettingRow
@@ -698,7 +802,7 @@ export default function ProfileScreen() {
           <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-100 mb-4">
               <Text className="text-lg font-bold text-text-main font-bold">
-                {currentLang === 'vi' ? 'Thêm nguồn tiền mới' : 'Add New Money Source'}
+                {t('profile.modalAddSourceTitle')}
               </Text>
               <TouchableOpacity
                 onPress={() => setIsAddWalletModalVisible(false)}
@@ -710,7 +814,7 @@ export default function ProfileScreen() {
 
             {/* Chọn loại nguồn tiền */}
             <Text className="text-xs font-semibold text-text-muted mb-2 font-sans">
-              {currentLang === 'vi' ? 'Loại nguồn tiền' : 'Source Type'}
+              {t('profile.sourceTypeLabel')}
             </Text>
             <View className="flex-row gap-2 mb-4">
               <TouchableOpacity
@@ -728,7 +832,7 @@ export default function ProfileScreen() {
                     newWalletType === 'bank' ? 'text-brand' : 'text-text-main'
                   }`}
                 >
-                  {currentLang === 'vi' ? 'Ngân hàng' : 'Bank'}
+                  {t('profile.typeBank')}
                 </Text>
               </TouchableOpacity>
 
@@ -747,7 +851,7 @@ export default function ProfileScreen() {
                     newWalletType === 'wallet' ? 'text-brand' : 'text-text-main'
                   }`}
                 >
-                  {currentLang === 'vi' ? 'Ví điện tử' : 'E-Wallet'}
+                  {t('profile.typeWallet')}
                 </Text>
               </TouchableOpacity>
 
@@ -766,24 +870,20 @@ export default function ProfileScreen() {
                     newWalletType === 'cash' ? 'text-brand' : 'text-text-main'
                   }`}
                 >
-                  {currentLang === 'vi' ? 'Tiền mặt' : 'Cash'}
+                  {t('profile.typeCash')}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Nhập tên nguồn tiền */}
             <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
-              {currentLang === 'vi' ? 'Tên nguồn tiền' : 'Source Name'}
+              {t('profile.sourceNameLabel')}
             </Text>
             <View className="h-12 w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 justify-center mb-4">
               <TextInput
                 value={newWalletName}
                 onChangeText={setNewWalletName}
-                placeholder={
-                  currentLang === 'vi'
-                    ? 'VD: Techcombank, ZaloPay, Tiền mặt quỹ...'
-                    : 'e.g. Chase Bank, Apple Cash...'
-                }
+                placeholder={t('profile.sourceNamePlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 className="text-sm text-text-main font-sans"
               />
@@ -791,14 +891,14 @@ export default function ProfileScreen() {
 
             {/* Nhập số dư ban đầu */}
             <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
-              {currentLang === 'vi' ? 'Số dư hiện tại (₫)' : 'Initial Balance (₫)'}
+              {t('profile.initialBalanceLabel')}
             </Text>
             <View className="h-12 w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 justify-center mb-6">
               <TextInput
                 value={newWalletBalance}
                 onChangeText={setNewWalletBalance}
                 keyboardType="numeric"
-                placeholder="0 ₫"
+                placeholder={t('profile.initialBalancePlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 className="text-sm text-text-main font-sans font-bold"
               />
@@ -822,7 +922,7 @@ export default function ProfileScreen() {
                 className="flex-1 h-12 rounded-2xl bg-brand items-center justify-center shadow-sm"
               >
                 <Text className="text-sm font-bold text-white font-bold">
-                  {currentLang === 'vi' ? 'Lưu nguồn tiền' : 'Save Source'}
+                  {t('profile.confirmAddSource')}
                 </Text>
               </TouchableOpacity>
             </View>

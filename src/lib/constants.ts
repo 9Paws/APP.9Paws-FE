@@ -14,4 +14,7 @@ export const STORAGE_KEYS = {
   BIOMETRIC_ENABLED: 'ninepaws_biometric_enabled',
   REMINDER_ENABLED: 'ninepaws_reminder_enabled',
   REMINDER_TIME: 'ninepaws_reminder_time',
+  PUSH_NOTIFICATIONS_ENABLED: 'ninepaws_push_notifications_enabled',
+  PUSH_PERMISSION_REQUESTED: 'ninepaws_push_permission_requested',
+  WALLETS: 'ninepaws_wallets',
 } as const;

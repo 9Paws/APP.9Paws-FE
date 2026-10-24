@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 
 import {
@@ -21,7 +21,10 @@ import { Toast } from '@/components/ui/Toast';
 import { initI18n } from '@/i18n';
 import { api } from '@/lib/api';
 import { STORAGE_KEYS } from '@/lib/constants';
-import { getItem } from '@/lib/secure-storage';
+import { getItem, setItem } from '@/lib/secure-storage';
+import { requestPushPermissions, setupNotificationHandler } from '@/services/notification.service';
+
+setupNotificationHandler();
 
 export default function RootLayout() {
   const router = useRouter();
@@ -40,6 +43,25 @@ export default function RootLayout() {
   useEffect(() => {
     // Pre-warm kết nối backend ngầm ngay khi app vừa mở
     api.get('/', { timeout: 4000 }).catch(() => {});
+
+    // Yêu cầu quyền thông báo đẩy lần đầu mở app
+    const requestInitialPushPermission = async () => {
+      if (Platform.OS === 'web') return;
+      try {
+        const requested = await getItem(STORAGE_KEYS.PUSH_PERMISSION_REQUESTED);
+        if (!requested) {
+          await setItem(STORAGE_KEYS.PUSH_PERMISSION_REQUESTED, 'true');
+          const granted = await requestPushPermissions();
+          await setItem(
+            STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED,
+            granted ? 'true' : 'false'
+          );
+        }
+      } catch {
+        // Ignored in unsupported platforms
+      }
+    };
+    requestInitialPushPermission();
   }, []);
 
   useEffect(() => {

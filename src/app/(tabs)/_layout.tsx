@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { History, LayoutGrid, Plus, User, Users } from 'lucide-react-native';
 
 function AddCenterButton(props: any) {
+  const { t } = useTranslation();
   return (
     <TouchableOpacity
       {...props}
@@ -18,7 +19,7 @@ function AddCenterButton(props: any) {
         },
       ]}
       accessibilityRole="button"
-      accessibilityLabel="Tạo giao dịch mới"
+      accessibilityLabel={t('tabs.addTransaction')}
     >
       <View style={styles.addButton}>
         <Plus size={28} color="#FFFFFF" strokeWidth={2.5} />
