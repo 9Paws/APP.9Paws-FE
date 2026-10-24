@@ -171,11 +171,6 @@ export default function ProfileScreen() {
           <View className="flex-1">
             <Text className="text-base font-bold text-text-main font-bold">{fullName} ✨</Text>
             <Text className="text-xs text-text-muted mt-0.5 font-sans">{email}</Text>
-            <View className="self-start mt-2 rounded-full bg-amber-50 border border-amber-200/60 px-2.5 py-0.5">
-              <Text className="text-[10px] font-bold text-amber-800">
-                {t('profile.memberBadge')}
-              </Text>
-            </View>
           </View>
 
           <TouchableOpacity className="h-9 w-9 items-center justify-center rounded-full bg-gray-50 border border-gray-200">
@@ -241,8 +236,8 @@ export default function ProfileScreen() {
 
         {/* Section: Cài đặt ứng dụng & Bảo mật */}
         <View className="mb-6">
-          <View className="flex-row items-center mb-3 px-1">
-            <Sliders size={16} color="#F15C22" className="mr-2" />
+          <View className="flex-row items-center gap-x-2.5 mb-3 px-1">
+            <Sliders size={16} color="#F15C22" />
             <Text className="text-sm font-bold text-text-main">
               {t('profile.securitySection')}
             </Text>
@@ -324,8 +319,8 @@ export default function ProfileScreen() {
 
         {/* Section: Hỗ trợ & Thông tin */}
         <View className="mb-6">
-          <View className="flex-row items-center mb-3 px-1">
-            <HelpCircle size={16} color="#F15C22" className="mr-2" />
+          <View className="flex-row items-center gap-x-2.5 mb-3 px-1">
+            <HelpCircle size={16} color="#F15C22" />
             <Text className="text-sm font-bold text-text-main">
               {t('profile.supportSection')}
             </Text>
@@ -368,9 +363,9 @@ export default function ProfileScreen() {
           activeOpacity={0.8}
           onPress={handleLogout}
           disabled={isLoggingOut}
-          className="h-14 w-full flex-row items-center justify-center rounded-2xl bg-red-50 border border-red-200/70 shadow-sm mb-4"
+          className="h-14 w-full flex-row items-center justify-center gap-x-2.5 rounded-2xl bg-red-50 border border-red-200/70 shadow-sm mb-4"
         >
-          <LogOut size={18} color="#EF4444" className="mr-2" />
+          <LogOut size={18} color="#EF4444" />
           <Text className="text-base font-bold text-red-500 font-bold">
             {isLoggingOut ? '...' : t('profile.logoutButton')}
           </Text>

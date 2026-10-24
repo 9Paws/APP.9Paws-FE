@@ -58,3 +58,32 @@ export const otpSchema = z.object({
 });
 
 export type OtpFormData = z.infer<typeof otpSchema>;
+
+// -----------------------------------------------------------------------------
+// 4. Schemas cho Màn hình Quên mật khẩu
+// -----------------------------------------------------------------------------
+export const forgotPasswordEmailSchema = z.object({
+    email: z
+        .string()
+        .min(1, 'Vui lòng nhập email')
+        .email('Địa chỉ email không đúng định dạng'),
+});
+
+export type ForgotPasswordEmailFormData = z.infer<typeof forgotPasswordEmailSchema>;
+
+export const resetPasswordSchema = z
+    .object({
+        password: z
+            .string()
+            .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+            .regex(PASSWORD_REGEX, 'Mật khẩu phải chứa ít nhất 1 chữ cái và 1 chữ số'),
+        confirmPassword: z
+            .string()
+            .min(1, 'Vui lòng xác nhận lại mật khẩu'),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: 'Mật khẩu xác nhận không khớp',
+        path: ['confirmPassword'],
+    });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

@@ -142,13 +142,7 @@ export default function LoginScreen() {
             {/* Forgot password */}
             <TouchableOpacity
               className="self-end"
-              onPress={() =>
-                showToast({
-                  type: 'info',
-                  title: t('auth.login.forgotPassword'),
-                  message: 'Tính năng tự động khôi phục mật khẩu qua email đang được hoàn thiện.',
-                })
-              }
+              onPress={() => router.push('/(auth)/forgot-password' as any)}
             >
               <Text className="text-sm font-semibold text-brand">
                 {t('auth.login.forgotPassword')}
