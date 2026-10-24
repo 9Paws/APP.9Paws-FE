@@ -11,4 +11,7 @@ export const STORAGE_KEYS = {
   SAVED_EMAIL: 'ninepaws_saved_email',
   LANGUAGE: 'ninepaws_language',
   USER: 'ninepaws_user',
+  BIOMETRIC_ENABLED: 'ninepaws_biometric_enabled',
+  REMINDER_ENABLED: 'ninepaws_reminder_enabled',
+  REMINDER_TIME: 'ninepaws_reminder_time',
 } as const;
