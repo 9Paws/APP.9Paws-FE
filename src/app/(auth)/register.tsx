@@ -23,6 +23,7 @@ import { useToastStore } from '@/stores/toast.store';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { MiuMiuTip } from '@/components/ui/MiuMiuTip';
+import { GoogleIcon } from '@/components/ui/GoogleIcon';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
@@ -253,6 +254,7 @@ export default function RegisterScreen() {
           <Button
             title={t('auth.register.googleButton')}
             variant="outline"
+            icon={<GoogleIcon size={20} />}
             onPress={() => {
               showToast({
                 type: 'info',

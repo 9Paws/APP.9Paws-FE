@@ -4,12 +4,14 @@ import {
     Text,
     TouchableOpacity,
     TouchableOpacityProps,
+    View,
 } from 'react-native';
 
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
     variant?: 'primary' | 'outline' | 'ghost';
     isLoading?: boolean;
+    icon?: React.ReactNode;
 }
 
 const variantStyles = {
@@ -34,6 +36,7 @@ export const Button: React.FC<ButtonProps> = ({
     title,
     variant = 'primary',
     isLoading = false,
+    icon,
     disabled,
     className = '',
     ...props
@@ -51,7 +54,10 @@ export const Button: React.FC<ButtonProps> = ({
             {isLoading ? (
                 <ActivityIndicator color={styles.indicator} />
             ) : (
-                <Text className={`text-center text-base ${styles.text}`}>{title}</Text>
+                <>
+                    {icon && <View className="mr-3">{icon}</View>}
+                    <Text className={`text-center text-base ${styles.text}`}>{title}</Text>
+                </>
             )}
         </TouchableOpacity>
     );

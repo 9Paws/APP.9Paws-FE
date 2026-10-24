@@ -1,32 +1,41 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { History, LayoutGrid, Plus, User, Users } from 'lucide-react-native';
 
-function AddCenterButton({ onPress }: { onPress?: (e?: any) => void }) {
+function AddCenterButton(props: any) {
   return (
     <TouchableOpacity
+      {...props}
       activeOpacity={0.85}
-      onPress={onPress}
-      style={styles.addButton}
+      style={[
+        props.style,
+        {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      ]}
       accessibilityRole="button"
       accessibilityLabel="Tạo giao dịch mới"
     >
-      <Plus size={28} color="#FFFFFF" strokeWidth={2.5} />
+      <View style={styles.addButton}>
+        <Plus size={28} color="#FFFFFF" strokeWidth={2.5} />
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   addButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: '#F15C22',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 22,
+    marginBottom: 20,
     shadowColor: '#F15C22',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
@@ -51,6 +60,11 @@ export default function TabsLayout() {
           maxWidth: isWide ? maxContentWidth : undefined,
           width: '100%',
           alignSelf: 'center',
+        },
+        tabBarItemStyle: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
         },
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
@@ -97,7 +111,7 @@ export default function TabsLayout() {
         name="add"
         options={{
           title: '',
-          tabBarButton: (props) => <AddCenterButton onPress={props.onPress ?? undefined} />,
+          tabBarButton: (props) => <AddCenterButton {...props} />,
         }}
       />
       <Tabs.Screen
