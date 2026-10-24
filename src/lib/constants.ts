@@ -10,4 +10,5 @@ export const STORAGE_KEYS = {
   REFRESH_TOKEN: 'ninepaws_refresh_token',
   SAVED_EMAIL: 'ninepaws_saved_email',
   LANGUAGE: 'ninepaws_language',
+  USER: 'ninepaws_user',
 } as const;

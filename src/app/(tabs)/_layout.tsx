@@ -39,45 +39,35 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const isWide = width >= 640;
-  const tabWidth = Math.min(width - 32, 540);
-  const horizontalMargin = isWide ? Math.max(0, (width - tabWidth) / 2) : 0;
+  const maxContentWidth = 500;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarLabelPosition: 'below-icon',
         sceneStyle: {
           backgroundColor: '#FAF7F2',
-          ...(isWide
-            ? {
-                maxWidth: 640,
-                width: '100%',
-                alignSelf: 'center',
-                paddingBottom: 90,
-              }
-            : {}),
+          maxWidth: isWide ? maxContentWidth : undefined,
+          width: '100%',
+          alignSelf: 'center',
         },
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#F3F4F6',
-          borderTopWidth: isWide ? 0 : 1,
-          height: isWide ? 64 : 68,
-          paddingBottom: isWide ? 8 : 10,
+          borderTopWidth: 1,
+          height: 68,
+          paddingBottom: 10,
           paddingTop: 8,
+          maxWidth: isWide ? maxContentWidth : undefined,
+          width: '100%',
+          alignSelf: 'center',
           ...(isWide
             ? {
-                position: 'absolute',
-                bottom: 20,
-                left: horizontalMargin,
-                width: tabWidth,
-                borderRadius: 24,
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-                shadowColor: '#000000',
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.1,
-                shadowRadius: 16,
-                elevation: 10,
+                borderLeftWidth: 1,
+                borderRightWidth: 1,
+                borderLeftColor: '#F3F4F6',
+                borderRightColor: '#F3F4F6',
               }
             : {}),
         },

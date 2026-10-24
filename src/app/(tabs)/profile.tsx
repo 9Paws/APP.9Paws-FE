@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Alert,
+  ActivityIndicator,
   Image,
   Modal,
   ScrollView,
@@ -95,9 +95,10 @@ export default function ProfileScreen() {
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLangModalVisible, setIsLangModalVisible] = useState(false);
+  const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
 
-  const fullName = user?.fullName || 'Mai Nguyễn';
-  const email = user?.email || 'mai.nguyen@email.com';
+  const fullName = user?.fullName || 'Người dùng 9Paws';
+  const email = user?.email || '';
   const firstName = fullName.split(' ').pop() || 'bạn';
 
   const currentLang = (i18n.language as SupportedLanguage) || 'vi';
@@ -113,28 +114,24 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(t('profile.logoutConfirmTitle'), t('profile.logoutConfirmMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('profile.logoutButton'),
-        style: 'destructive',
-        onPress: async () => {
-          setIsLoggingOut(true);
-          try {
-            const refreshToken = await getItem(STORAGE_KEYS.REFRESH_TOKEN);
-            if (refreshToken) {
-              await authService.logout(refreshToken);
-            }
-          } catch {
-            // Vẫn logout ở client ngay cả khi gọi API thất bại
-          } finally {
-            await logout();
-            setIsLoggingOut(false);
-            router.replace('/(auth)/login' as any);
-          }
-        },
-      },
-    ]);
+    setIsLogoutModalVisible(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const refreshToken = await getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      if (refreshToken) {
+        await authService.logout(refreshToken);
+      }
+    } catch {
+      // Vẫn logout ở client ngay cả khi gọi API thất bại
+    } finally {
+      await logout();
+      setIsLoggingOut(false);
+      setIsLogoutModalVisible(false);
+      router.replace('/(auth)/login' as any);
+    }
   };
 
   return (
@@ -441,6 +438,57 @@ export default function ProfileScreen() {
               </View>
               {currentLang === 'en' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Xác nhận Đăng xuất */}
+      <Modal
+        visible={isLogoutModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsLogoutModalVisible(false)}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl items-center">
+            <View className="h-16 w-16 rounded-full bg-red-50 border border-red-100 items-center justify-center mb-4">
+              <LogOut size={26} color="#EF4444" />
+            </View>
+
+            <Text className="text-lg font-bold text-text-main text-center font-bold mb-2">
+              {t('profile.logoutConfirmTitle')}
+            </Text>
+
+            <Text className="text-sm text-text-muted text-center font-sans mb-6">
+              {t('profile.logoutConfirmMessage')}
+            </Text>
+
+            <View className="w-full flex-row gap-3">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setIsLogoutModalVisible(false)}
+                className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
+              >
+                <Text className="text-sm font-semibold text-text-main font-bold">
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleConfirmLogout}
+                disabled={isLoggingOut}
+                className="flex-1 h-12 rounded-2xl bg-red-500 items-center justify-center shadow-sm"
+              >
+                {isLoggingOut ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text className="text-sm font-bold text-white font-bold">
+                    {t('profile.logoutButton')}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
