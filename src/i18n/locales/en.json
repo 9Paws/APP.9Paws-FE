@@ -1,0 +1,92 @@
+{
+  "common": {
+    "appName": "9Paws",
+    "appTagline": "FINANCE MANAGEMENT",
+    "or": "or continue with",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "success": "Success",
+    "error": "Error",
+    "notice": "Notice"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome to 9Paws! ✨",
+      "subtitle": "Effortless spending & Simple bill splitting",
+      "emailLabel": "Your email",
+      "passwordLabel": "Password",
+      "forgotPassword": "Forgot password?",
+      "submitButton": "Sign In Now →",
+      "googleButton": "Continue with Google",
+      "noAccount": "Don't have a 9Paws account? ",
+      "registerNow": "Sign Up",
+      "loginSuccess": "Signed in successfully! Welcome back ✨",
+      "loginFailed": "Invalid email or password. Please try again!"
+    },
+    "register": {
+      "title": "Create 9Paws Account ✨",
+      "subtitle": "Start your smart financial journey together",
+      "fullNameLabel": "Full Name",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong",
+      "miumiuTip": "Just enter the total bill. Miu will help calculate every penny for your group!",
+      "submitButton": "Continue to receive OTP →",
+      "googleButton": "Sign Up with Google",
+      "hasAccount": "Already have an account? ",
+      "loginNow": "Sign In",
+      "registerSuccess": "Verification code sent to your email."
+    },
+    "otp": {
+      "title": "Enter Verification Code ✨",
+      "subtitle": "A 6-digit code has been sent to your inbox",
+      "expiresIn": "Expires in: ",
+      "expired": "Expired",
+      "resendCode": "Resend code",
+      "miumiuTip": "Never share this OTP with anyone to keep your account safe",
+      "submitButton": "Verify",
+      "incomplete": "Please enter all 6 digits of the OTP code.",
+      "resendWait": "Code is still valid. Please wait before requesting another.",
+      "resendSuccess": "A new verification code has been sent to your email."
+    }
+  },
+  "profile": {
+    "greeting": "Good Morning, {{name}} ✨",
+    "subtitle": "Cozy Ledger ✨",
+    "memberBadge": "Diligent Member 🌟",
+    "walletsSection": "Accounts & Wallets",
+    "addWallet": "Add wallet",
+    "mainBadge": "Primary",
+    "foodBadge": "Dining",
+    "cash": "Cash",
+    "securitySection": "App Settings & Security",
+    "biometric": "Face ID / Fingerprint Lock",
+    "biometricSub": "Secure app with biometrics on open",
+    "reminder": "Expense Reminder",
+    "reminderSub": "Daily at 21:00 before bedtime",
+    "currency": "Currency",
+    "currencySub": "Display currency format",
+    "currencyValue": "Vietnamese Dong (VND - ₫)",
+    "language": "App Language",
+    "languageSub": "System text language",
+    "languageValue": "English",
+    "supportSection": "Support & About",
+    "feedback": "Feedback & Bug Report",
+    "feedbackSub": "Share feedback to help improve the app",
+    "about": "About 9Paws",
+    "aboutSub": "A cozy & peaceful financial companion",
+    "logoutButton": "Sign Out Account",
+    "logoutConfirmTitle": "Sign Out",
+    "logoutConfirmMessage": "Are you sure you want to sign out of 9Paws?",
+    "selectLanguage": "Select App Language"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "history": "History",
+    "split": "Split Bill",
+    "profile": "Me"
+  }
+}

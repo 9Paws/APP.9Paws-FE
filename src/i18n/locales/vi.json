@@ -1,0 +1,92 @@
+{
+  "common": {
+    "appName": "9Paws",
+    "appTagline": "QUẢN LÝ TÀI CHÍNH",
+    "or": "hoặc đăng nhập bằng",
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận",
+    "success": "Thành công",
+    "error": "Lỗi",
+    "notice": "Thông báo"
+  },
+  "auth": {
+    "login": {
+      "title": "Chào mừng bạn đến với 9Paws! ✨",
+      "subtitle": "Chi tiêu nhẹ nhàng & Share bill dễ dàng",
+      "emailLabel": "Email của bạn",
+      "passwordLabel": "Mật khẩu",
+      "forgotPassword": "Quên mật khẩu?",
+      "submitButton": "Đăng nhập ngay →",
+      "googleButton": "Tiếp tục với Google",
+      "noAccount": "Chưa có tài khoản 9Paws? ",
+      "registerNow": "Đăng ký ngay",
+      "loginSuccess": "Đăng nhập thành công! Chào mừng bạn trở lại ✨",
+      "loginFailed": "Email hoặc mật khẩu không chính xác. Vui lòng thử lại!"
+    },
+    "register": {
+      "title": "Tạo tài khoản 9Paws ✨",
+      "subtitle": "Cùng bắt đầu hành trình quản lý tài chính nhé",
+      "fullNameLabel": "Họ và tên",
+      "emailLabel": "Địa chỉ Email",
+      "passwordLabel": "Mật khẩu",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "weak": "Yếu",
+      "medium": "Trung bình",
+      "strong": "Mạnh",
+      "miumiuTip": "Chỉ cần nhập tổng bill. Miu sẽ hỗ trợ tính toán chi li từng hào cho nhóm bạn nhé!",
+      "submitButton": "Tiếp tục nhận mã OTP →",
+      "googleButton": "Đăng ký nhanh với Google",
+      "hasAccount": "Đã có tài khoản? ",
+      "loginNow": "Đăng nhập ngay",
+      "registerSuccess": "Mã xác thực OTP đã được gửi đến email của bạn."
+    },
+    "otp": {
+      "title": "Nhập mã xác thực ✨",
+      "subtitle": "Mã gồm 6 chữ số vừa được gửi đến hộp thư",
+      "expiresIn": "Hiệu lực: ",
+      "expired": "Hết hạn",
+      "resendCode": "Gửi lại mã",
+      "miumiuTip": "Không chia sẻ OTP với ai để đảm bảo bảo mật bạn nhé",
+      "submitButton": "Xác nhận",
+      "incomplete": "Vui lòng nhập đầy đủ 6 chữ số mã xác thực OTP.",
+      "resendWait": "Mã vẫn còn hiệu lực. Vui lòng đợi trước khi gửi lại.",
+      "resendSuccess": "Mã xác thực mới đã được gửi tới hộp thư của bạn."
+    }
+  },
+  "profile": {
+    "greeting": "Chào Buổi Sáng, {{name}} ✨",
+    "subtitle": "Sổ tay ấm cúng ✨",
+    "memberBadge": "Thành viên Chăm chỉ 🌟",
+    "walletsSection": "Tài khoản & Ví thanh toán",
+    "addWallet": "Thêm ví",
+    "mainBadge": "Chính",
+    "foodBadge": "Ăn uống",
+    "cash": "Tiền mặt",
+    "securitySection": "Cài đặt ứng dụng & Bảo mật",
+    "biometric": "Khóa Face ID / Vân tay",
+    "biometricSub": "Mở khóa bảo mật mỗi khi vào app",
+    "reminder": "Nhắc nhở ghi chép",
+    "reminderSub": "Hàng ngày lúc 21:00 trước khi ngủ",
+    "currency": "Đơn vị tiền tệ",
+    "currencySub": "Đơn vị hiển thị",
+    "currencyValue": "Việt Nam Đồng (VND - đ)",
+    "language": "Ngôn ngữ ứng dụng",
+    "languageSub": "Giao diện văn bản hệ thống",
+    "languageValue": "Tiếng Việt",
+    "supportSection": "Hỗ trợ & Thông tin",
+    "feedback": "Góp ý & Báo lỗi",
+    "feedbackSub": "Chia sẻ phản hồi để hoàn thiện ứng dụng",
+    "about": "Về 9Paws",
+    "aboutSub": "Sổ tay tài chính bình yên & ấm cúng",
+    "logoutButton": "Đăng xuất tài khoản",
+    "logoutConfirmTitle": "Đăng xuất tài khoản",
+    "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi 9Paws?",
+    "selectLanguage": "Chọn ngôn ngữ ứng dụng"
+  },
+  "tabs": {
+    "overview": "Tổng quan",
+    "history": "Lịch sử",
+    "split": "Chia tiền",
+    "profile": "Tôi"
+  }
+}
