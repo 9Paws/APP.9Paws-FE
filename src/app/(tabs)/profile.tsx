@@ -19,6 +19,7 @@ import { getPushPermissions, requestPushPermissions } from '@/services/notificat
 import {
   Bell,
   BellRing,
+  Bug,
   Check,
   ChevronRight,
   Clock,
@@ -27,12 +28,16 @@ import {
   Globe,
   Heart,
   HelpCircle,
+  Lightbulb,
   LogOut,
   MessageSquare,
   Pencil,
   Plus,
   QrCode,
+  Send,
   Sliders,
+  Sparkles,
+  UserCheck,
   Wallet,
   X,
 } from 'lucide-react-native';
@@ -99,6 +104,23 @@ interface WalletItem {
   badge?: string;
 }
 
+interface CurrencyOption {
+  code: string;
+  name: string;
+  symbol: string;
+  flag: string;
+  locale: string;
+}
+
+const CURRENCIES: CurrencyOption[] = [
+  { code: 'VND', name: 'Việt Nam Đồng', symbol: '₫', flag: '🇻🇳', locale: 'vi-VN' },
+  { code: 'USD', name: 'US Dollar', symbol: '$', flag: '🇺🇸', locale: 'en-US' },
+  { code: 'EUR', name: 'Euro', symbol: '€', flag: '🇪🇺', locale: 'de-DE' },
+  { code: 'JPY', name: 'Japanese Yen', symbol: '¥', flag: '🇯🇵', locale: 'ja-JP' },
+  { code: 'KRW', name: 'Korean Won', symbol: '₩', flag: '🇰🇷', locale: 'ko-KR' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', flag: '🇨🇳', locale: 'zh-CN' },
+];
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
@@ -109,6 +131,7 @@ export default function ProfileScreen() {
 
   const [wallets, setWallets] = useState<WalletItem[]>([]);
 
+  const [currentCurrency, setCurrentCurrency] = useState<string>('VND');
   const [faceIdEnabled, setFaceIdEnabled] = useState(false);
   const [isBiometricSupported, setIsBiometricSupported] = useState(true);
   const [pushNotificationEnabled, setPushNotificationEnabled] = useState(false);
@@ -119,6 +142,16 @@ export default function ProfileScreen() {
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [isAddWalletModalVisible, setIsAddWalletModalVisible] = useState(false);
   const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
+  const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
+  const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+  const [isAboutModalVisible, setIsAboutModalVisible] = useState(false);
+
+  // Feedback form state
+  const [feedbackType, setFeedbackType] = useState<'idea' | 'bug' | 'other'>('idea');
+  const [feedbackTitle, setFeedbackTitle] = useState('');
+  const [feedbackContent, setFeedbackContent] = useState('');
+  const [feedbackEmail, setFeedbackEmail] = useState(user?.email || '');
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   // New Wallet form state
   const [newWalletName, setNewWalletName] = useState('');
@@ -180,6 +213,10 @@ export default function ProfileScreen() {
           // Ignore parse error
         }
       }
+    });
+
+    getItem(STORAGE_KEYS.CURRENCY).then((val) => {
+      if (val) setCurrentCurrency(val);
     });
 
     getItem(STORAGE_KEYS.REMINDER_ENABLED).then((val) => {
@@ -345,16 +382,81 @@ export default function ProfileScreen() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+    const curr = CURRENCIES.find((c) => c.code === currentCurrency) || CURRENCIES[0];
+    try {
+      return new Intl.NumberFormat(curr.locale, {
+        style: 'currency',
+        currency: curr.code,
+        maximumFractionDigits: curr.code === 'VND' || curr.code === 'JPY' || curr.code === 'KRW' ? 0 : 2,
+      }).format(amount);
+    } catch {
+      return `${new Intl.NumberFormat('vi-VN').format(amount)} ${curr.symbol}`;
+    }
   };
+
+  const handleSelectCurrency = async (curr: CurrencyOption) => {
+    setCurrentCurrency(curr.code);
+    await setItem(STORAGE_KEYS.CURRENCY, curr.code);
+    setIsCurrencyModalVisible(false);
+    showToast({
+      type: 'success',
+      title: t('profile.currencyChangedTitle'),
+      message: t('profile.currencyChangedMessage', {
+        name: `${curr.name} (${curr.code} - ${curr.symbol})`,
+      }),
+    });
+  };
+
+  const handleSubmitFeedback = () => {
+    if (!feedbackContent.trim()) {
+      showToast({
+        type: 'error',
+        title: t('common.notice'),
+        message: t('profile.feedbackEmptyNotice'),
+      });
+      return;
+    }
+    setIsSubmittingFeedback(true);
+    setTimeout(() => {
+      setIsSubmittingFeedback(false);
+      setIsFeedbackModalVisible(false);
+      setFeedbackTitle('');
+      setFeedbackContent('');
+      showToast({
+        type: 'success',
+        title: t('common.success'),
+        message: t('profile.feedbackSubmittedSuccess'),
+      });
+    }, 400);
+  };
+
+  const getLanguageDisplayName = (lang: string) => {
+    switch (lang) {
+      case 'vi':
+        return 'Tiếng Việt';
+      case 'en':
+        return 'English';
+      case 'zh':
+        return '中文';
+      case 'ko':
+        return '한국어';
+      case 'ja':
+        return '日本語';
+      default:
+        return 'Tiếng Việt';
+    }
+  };
+
+  const activeCurrencyObj =
+    CURRENCIES.find((c) => c.code === currentCurrency) || CURRENCIES[0];
 
   const handleSelectLanguage = async (lang: SupportedLanguage) => {
     await changeLanguage(lang);
     setIsLangModalVisible(false);
     showToast({
       type: 'success',
-      title: lang === 'vi' ? 'Đã đổi ngôn ngữ' : 'Language Changed',
-      message: lang === 'vi' ? 'Giao diện đã chuyển sang Tiếng Việt' : 'Interface switched to English',
+      title: t('profile.langChangedTitle'),
+      message: t('profile.langChangedMessage'),
     });
   };
 
@@ -576,25 +678,19 @@ export default function ProfileScreen() {
             <View className="h-px bg-gray-100 my-1" />
 
             <SettingRow
-              icon={<Text className="text-base font-bold text-rose-500">$</Text>}
+              icon={<Text className="text-base font-bold text-rose-500">{activeCurrencyObj.symbol}</Text>}
               iconBgColor="bg-rose-50"
               title={t('profile.currency')}
               subtitle={t('profile.currencySub')}
               rightElement={
                 <View className="flex-row items-center">
                   <Text className="text-xs font-semibold text-text-muted mr-1.5 font-sans">
-                    {t('profile.currencyValue')}
+                    {activeCurrencyObj.flag} {activeCurrencyObj.code} ({activeCurrencyObj.symbol})
                   </Text>
                   <ChevronRight size={16} color="#9CA3AF" />
                 </View>
               }
-              onPress={() =>
-                showToast({
-                  type: 'info',
-                  title: t('profile.currency'),
-                  message: t('profile.currencyComingSoon'),
-                })
-              }
+              onPress={() => setIsCurrencyModalVisible(true)}
             />
             <View className="h-px bg-gray-100 my-1" />
 
@@ -606,7 +702,7 @@ export default function ProfileScreen() {
               rightElement={
                 <View className="flex-row items-center">
                   <Text className="text-xs font-semibold text-text-muted mr-1.5 font-sans">
-                    {currentLang === 'vi' ? 'Tiếng Việt' : 'English'}
+                    {getLanguageDisplayName(currentLang)}
                   </Text>
                   <ChevronRight size={16} color="#9CA3AF" />
                 </View>
@@ -631,13 +727,7 @@ export default function ProfileScreen() {
               iconBgColor="bg-amber-50"
               title={t('profile.feedback')}
               subtitle={t('profile.feedbackSub')}
-              onPress={() =>
-                showToast({
-                  type: 'success',
-                  title: t('profile.feedback'),
-                  message: t('profile.feedbackToast'),
-                })
-              }
+              onPress={() => setIsFeedbackModalVisible(true)}
             />
             <View className="h-px bg-gray-100 my-1" />
 
@@ -646,13 +736,7 @@ export default function ProfileScreen() {
               iconBgColor="bg-pink-50"
               title={t('profile.about')}
               subtitle={t('profile.aboutSub')}
-              onPress={() =>
-                showToast({
-                  type: 'info',
-                  title: '9Paws v1.0.0 ✨',
-                  message: t('profile.aboutSub'),
-                })
-              }
+              onPress={() => setIsAboutModalVisible(true)}
             />
           </View>
         </View>
@@ -701,14 +785,14 @@ export default function ProfileScreen() {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => handleSelectLanguage('vi')}
-              className={`flex-row items-center justify-between py-4 border-b border-gray-50 ${
-                currentLang === 'vi' ? 'bg-orange-50/40 rounded-xl px-3' : 'px-3'
+              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
+                currentLang === 'vi' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
               }`}
             >
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-3">🇻🇳</Text>
                 <View>
-                  <Text className="text-base font-bold text-text-main font-bold">Tiếng Việt</Text>
+                  <Text className="text-sm font-bold text-text-main font-bold">Tiếng Việt</Text>
                   <Text className="text-xs text-text-muted font-sans">Việt Nam</Text>
                 </View>
               </View>
@@ -719,18 +803,72 @@ export default function ProfileScreen() {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => handleSelectLanguage('en')}
-              className={`flex-row items-center justify-between py-4 ${
-                currentLang === 'en' ? 'bg-orange-50/40 rounded-xl px-3' : 'px-3'
+              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
+                currentLang === 'en' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
               }`}
             >
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-3">🇬🇧</Text>
                 <View>
-                  <Text className="text-base font-bold text-text-main font-bold">English</Text>
-                  <Text className="text-xs text-text-muted font-sans">United States / UK</Text>
+                  <Text className="text-sm font-bold text-text-main font-bold">English</Text>
+                  <Text className="text-xs text-text-muted font-sans">Global / US</Text>
                 </View>
               </View>
               {currentLang === 'en' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
+            </TouchableOpacity>
+
+            {/* 中文 */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => handleSelectLanguage('zh')}
+              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
+                currentLang === 'zh' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
+              }`}
+            >
+              <View className="flex-row items-center">
+                <Text className="text-2xl mr-3">🇨🇳</Text>
+                <View>
+                  <Text className="text-sm font-bold text-text-main font-bold">中文</Text>
+                  <Text className="text-xs text-text-muted font-sans">简体中文 (China)</Text>
+                </View>
+              </View>
+              {currentLang === 'zh' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
+            </TouchableOpacity>
+
+            {/* 한국어 */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => handleSelectLanguage('ko')}
+              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
+                currentLang === 'ko' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
+              }`}
+            >
+              <View className="flex-row items-center">
+                <Text className="text-2xl mr-3">🇰🇷</Text>
+                <View>
+                  <Text className="text-sm font-bold text-text-main font-bold">한국어</Text>
+                  <Text className="text-xs text-text-muted font-sans">대한민국 (Korea)</Text>
+                </View>
+              </View>
+              {currentLang === 'ko' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
+            </TouchableOpacity>
+
+            {/* 日本語 */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => handleSelectLanguage('ja')}
+              className={`flex-row items-center justify-between py-3.5 ${
+                currentLang === 'ja' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
+              }`}
+            >
+              <View className="flex-row items-center">
+                <Text className="text-2xl mr-3">🇯🇵</Text>
+                <View>
+                  <Text className="text-sm font-bold text-text-main font-bold">日本語</Text>
+                  <Text className="text-xs text-text-muted font-sans">日本 (Japan)</Text>
+                </View>
+              </View>
+              {currentLang === 'ja' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
             </TouchableOpacity>
           </View>
         </View>
@@ -984,6 +1122,325 @@ export default function ProfileScreen() {
             >
               <Text className="text-sm font-semibold text-text-main font-bold">
                 {t('common.cancel')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Chọn Đơn vị tiền tệ (Currency Switcher Sheet) */}
+      <Modal
+        visible={isCurrencyModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsCurrencyModalVisible(false)}
+      >
+        <View className="flex-1 justify-end bg-black/40">
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={() => setIsCurrencyModalVisible(false)}
+          />
+          <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
+            <View className="flex-row items-center justify-between pb-4 border-b border-gray-100 mb-2">
+              <Text className="text-lg font-bold text-text-main font-bold">
+                {t('profile.currencyModalTitle')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setIsCurrencyModalVisible(false)}
+                className="p-1"
+              >
+                <X size={20} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {CURRENCIES.map((curr) => {
+              const isSelected = currentCurrency === curr.code;
+              return (
+                <TouchableOpacity
+                  key={curr.code}
+                  activeOpacity={0.7}
+                  onPress={() => handleSelectCurrency(curr)}
+                  className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
+                    isSelected ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
+                  }`}
+                >
+                  <View className="flex-row items-center">
+                    <Text className="text-2xl mr-3">{curr.flag}</Text>
+                    <View>
+                      <Text className="text-sm font-bold text-text-main font-bold">
+                        {curr.name} ({curr.code})
+                      </Text>
+                      <Text className="text-xs text-text-muted font-sans">
+                        {curr.symbol} • {curr.locale}
+                      </Text>
+                    </View>
+                  </View>
+                  {isSelected && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Góp ý & Báo lỗi (Feedback & Bug Report Modal) */}
+      <Modal
+        visible={isFeedbackModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsFeedbackModalVisible(false)}
+      >
+        <View className="flex-1 justify-end bg-black/40">
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={() => setIsFeedbackModalVisible(false)}
+          />
+          <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
+            <View className="flex-row items-center justify-between pb-4 border-b border-gray-100 mb-3">
+              <Text className="text-lg font-bold text-text-main font-bold">
+                {t('profile.feedbackModalTitle')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setIsFeedbackModalVisible(false)}
+                className="p-1"
+              >
+                <X size={20} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Category selection */}
+            <Text className="text-xs font-semibold text-text-muted mb-2 font-sans">
+              {t('profile.feedbackTypeLabel')}
+            </Text>
+            <View className="flex-row gap-2 mb-3.5">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setFeedbackType('idea')}
+                className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl border ${
+                  feedbackType === 'idea'
+                    ? 'border-brand bg-orange-50'
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <Lightbulb size={14} color={feedbackType === 'idea' ? '#F15C22' : '#6B7280'} />
+                <Text
+                  className={`ml-1 text-xs font-bold ${
+                    feedbackType === 'idea' ? 'text-brand' : 'text-text-main'
+                  }`}
+                >
+                  {t('profile.feedbackTypeIdea')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setFeedbackType('bug')}
+                className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl border ${
+                  feedbackType === 'bug'
+                    ? 'border-brand bg-orange-50'
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <Bug size={14} color={feedbackType === 'bug' ? '#F15C22' : '#6B7280'} />
+                <Text
+                  className={`ml-1 text-xs font-bold ${
+                    feedbackType === 'bug' ? 'text-brand' : 'text-text-main'
+                  }`}
+                >
+                  {t('profile.feedbackTypeBug')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setFeedbackType('other')}
+                className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl border ${
+                  feedbackType === 'other'
+                    ? 'border-brand bg-orange-50'
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <MessageSquare size={14} color={feedbackType === 'other' ? '#F15C22' : '#6B7280'} />
+                <Text
+                  className={`ml-1 text-xs font-bold ${
+                    feedbackType === 'other' ? 'text-brand' : 'text-text-main'
+                  }`}
+                >
+                  {t('profile.feedbackTypeOther')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Subject input */}
+            <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
+              {t('profile.feedbackTitleLabel')}
+            </Text>
+            <View className="h-11 w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 justify-center mb-3">
+              <TextInput
+                value={feedbackTitle}
+                onChangeText={setFeedbackTitle}
+                placeholder={t('profile.feedbackTitlePlaceholder')}
+                placeholderTextColor="#9CA3AF"
+                className="text-xs text-text-main font-sans"
+              />
+            </View>
+
+            {/* Content input */}
+            <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
+              {t('profile.feedbackContentLabel')} *
+            </Text>
+            <View className="h-24 w-full rounded-2xl bg-gray-50 border border-gray-200 p-3 mb-3">
+              <TextInput
+                value={feedbackContent}
+                onChangeText={setFeedbackContent}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                placeholder={t('profile.feedbackContentPlaceholder')}
+                placeholderTextColor="#9CA3AF"
+                className="text-xs text-text-main font-sans flex-1"
+              />
+            </View>
+
+            {/* Email input */}
+            <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
+              {t('profile.feedbackEmailLabel')}
+            </Text>
+            <View className="h-11 w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 justify-center mb-5">
+              <TextInput
+                value={feedbackEmail}
+                onChangeText={setFeedbackEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder="you@domain.com"
+                placeholderTextColor="#9CA3AF"
+                className="text-xs text-text-main font-sans"
+              />
+            </View>
+
+            {/* Action buttons */}
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setIsFeedbackModalVisible(false)}
+                className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
+              >
+                <Text className="text-sm font-semibold text-text-main font-bold">
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleSubmitFeedback}
+                disabled={isSubmittingFeedback}
+                className="flex-1 h-12 rounded-2xl bg-brand items-center justify-center shadow-sm flex-row gap-1.5"
+              >
+                {isSubmittingFeedback ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <>
+                    <Send size={15} color="#FFFFFF" />
+                    <Text className="text-sm font-bold text-white font-bold">
+                      {t('profile.feedbackSubmitButton')}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Về 9Paws (About 9Paws Modal) */}
+      <Modal
+        visible={isAboutModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsAboutModalVisible(false)}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl items-center">
+            {/* Header Mascot */}
+            <View className="h-20 w-20 rounded-full overflow-hidden bg-amber-100 border-2 border-amber-200 items-center justify-center mb-3">
+              <Image source={MIU_MIU_IMAGE} style={{ width: 62, height: 62 }} resizeMode="contain" />
+            </View>
+
+            <Text className="text-xl font-extrabold text-text-main font-bold">
+              9Paws
+            </Text>
+            <View className="rounded-full bg-orange-100/70 px-2.5 py-0.5 mt-1 mb-2">
+              <Text className="text-[11px] font-bold text-brand">
+                {t('profile.aboutAppVersion')}
+              </Text>
+            </View>
+            <Text className="text-xs text-text-muted text-center font-sans mb-3">
+              {t('profile.aboutTagline')}
+            </Text>
+
+            {/* Story */}
+            <View className="w-full bg-orange-50/50 rounded-2xl p-3 border border-orange-100 mb-4">
+              <Text className="text-xs text-text-main leading-5 text-center font-sans">
+                {t('profile.aboutStory')}
+              </Text>
+            </View>
+
+            {/* Development Team */}
+            <View className="w-full mb-4">
+              <View className="flex-row items-center gap-1 mb-2">
+                <Sparkles size={13} color="#F15C22" />
+                <Text className="text-xs font-bold text-text-main uppercase tracking-wider">
+                  {t('profile.aboutDevTeamTitle')}
+                </Text>
+              </View>
+
+              {/* Nguyen Dai Hung */}
+              <View className="flex-row items-center p-2.5 rounded-xl bg-gray-50 border border-gray-100 mb-2">
+                <View className="h-9 w-9 rounded-full bg-orange-100 items-center justify-center mr-3">
+                  <UserCheck size={18} color="#F15C22" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs font-bold text-text-main font-bold">
+                    {t('profile.aboutDevHung')}
+                  </Text>
+                  <Text className="text-[10px] text-text-muted font-sans">
+                    {t('profile.aboutDevRole')}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Hoang Duc Chinh */}
+              <View className="flex-row items-center p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                <View className="h-9 w-9 rounded-full bg-indigo-100 items-center justify-center mr-3">
+                  <UserCheck size={18} color="#4F46E5" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs font-bold text-text-main font-bold">
+                    {t('profile.aboutDevChinh')}
+                  </Text>
+                  <Text className="text-[10px] text-text-muted font-sans">
+                    {t('profile.aboutDevRole')}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Copyright & Support */}
+            <Text className="text-[10px] text-text-muted text-center font-sans mb-4">
+              {t('profile.aboutCopyright')}
+              {'\n'}support@9paws.com
+            </Text>
+
+            {/* Close Button */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setIsAboutModalVisible(false)}
+              className="w-full h-11 rounded-2xl bg-brand items-center justify-center shadow-sm"
+            >
+              <Text className="text-sm font-bold text-white font-bold">
+                {t('profile.aboutCloseButton')}
               </Text>
             </TouchableOpacity>
           </View>
