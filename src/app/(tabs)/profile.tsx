@@ -51,6 +51,18 @@ import { changeLanguage, SupportedLanguage } from '@/i18n';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
+const isImageUri = (uri?: string | null) => {
+  if (!uri) return false;
+  return (
+    uri.startsWith('file://') ||
+    uri.startsWith('content://') ||
+    uri.startsWith('http://') ||
+    uri.startsWith('https://') ||
+    uri.startsWith('data:image') ||
+    uri.startsWith('ph://')
+  );
+};
+
 interface SettingRowProps {
   icon: React.ReactNode;
   iconBgColor?: string;
@@ -477,7 +489,13 @@ export default function ProfileScreen() {
               <Bell size={18} color="#1F2937" />
             </TouchableOpacity>
             <View className="h-10 w-10 items-center justify-center rounded-full overflow-hidden bg-amber-100 border border-amber-200">
-              <Image source={MIU_MIU_IMAGE} style={{ width: 32, height: 32 }} resizeMode="contain" />
+              {isImageUri(user?.avatarUrl) ? (
+                <Image source={{ uri: user!.avatarUrl! }} style={{ width: 40, height: 40 }} resizeMode="cover" />
+              ) : user?.avatarUrl && user.avatarUrl !== '🐱' ? (
+                <Text className="text-xl">{user.avatarUrl}</Text>
+              ) : (
+                <Image source={MIU_MIU_IMAGE} style={{ width: 32, height: 32 }} resizeMode="contain" />
+              )}
             </View>
           </View>
         </View>
@@ -485,7 +503,13 @@ export default function ProfileScreen() {
         {/* Profile Card */}
         <View className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex-row items-center mb-6">
           <View className="h-16 w-16 rounded-full overflow-hidden bg-amber-100 items-center justify-center border-2 border-amber-200 mr-3.5">
-            <Image source={MIU_MIU_IMAGE} style={{ width: 50, height: 50 }} resizeMode="contain" />
+            {isImageUri(user?.avatarUrl) ? (
+              <Image source={{ uri: user!.avatarUrl! }} style={{ width: 64, height: 64 }} resizeMode="cover" />
+            ) : user?.avatarUrl && user.avatarUrl !== '🐱' ? (
+              <Text className="text-3xl">{user.avatarUrl}</Text>
+            ) : (
+              <Image source={MIU_MIU_IMAGE} style={{ width: 50, height: 50 }} resizeMode="contain" />
+            )}
           </View>
 
           <View className="flex-1">
@@ -493,7 +517,11 @@ export default function ProfileScreen() {
             <Text className="text-xs text-text-muted mt-0.5 font-sans">{email}</Text>
           </View>
 
-          <TouchableOpacity className="h-9 w-9 items-center justify-center rounded-full bg-gray-50 border border-gray-200">
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push('/edit-profile' as any)}
+            className="h-9 w-9 items-center justify-center rounded-full bg-gray-50 border border-gray-200"
+          >
             <Pencil size={16} color="#6B7280" />
           </TouchableOpacity>
         </View>

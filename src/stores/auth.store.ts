@@ -44,13 +44,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     isLoading: true,
 
     setAuth: async ({ accessToken, refreshToken, user }) => {
+        const enrichedUser: UserResponse = {
+            ...user,
+            createdAt: user.createdAt || new Date().toISOString(),
+        };
         await Promise.all([
             setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken),
             setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken),
-            setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
+            setItem(STORAGE_KEYS.USER, JSON.stringify(enrichedUser)),
         ]);
 
-        set({ user, isAuthenticated: true, isLoading: false });
+        set({ user: enrichedUser, isAuthenticated: true, isLoading: false });
     },
 
     updateUser: (fields) => {
@@ -83,6 +87,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             if (userJson) {
                 try {
                     user = JSON.parse(userJson) as UserResponse;
+                    if (user && !user.createdAt) {
+                        user.createdAt = new Date().toISOString();
+                        setItem(STORAGE_KEYS.USER, JSON.stringify(user)).catch(() => {});
+                    }
                 } catch {
                     // Ignore parse error
                 }
@@ -94,6 +102,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                         fullName: (payload.fullName as string) || (payload.name as string) || (payload.sub as string) || '',
                         email: (payload.email as string) || (payload.sub as string) || '',
                         emailVerified: true,
+                        createdAt: (payload.createdAt as string) || (payload.iat ? new Date(payload.iat * 1000).toISOString() : new Date().toISOString()),
                     };
                     setItem(STORAGE_KEYS.USER, JSON.stringify(user)).catch(() => {});
                 }

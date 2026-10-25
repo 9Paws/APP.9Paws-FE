@@ -7,6 +7,7 @@ interface UserResponse {
     emailVerified: boolean;
     currency?: string | null;
     language?: string | null;
+    createdAt?: string | null;
 }
 
 export { UserResponse };
