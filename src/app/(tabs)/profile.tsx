@@ -23,6 +23,7 @@ import {
   Check,
   ChevronRight,
   Clock,
+  Coins,
   CreditCard,
   Fingerprint,
   Globe,
@@ -675,7 +676,7 @@ export default function ProfileScreen() {
             <View className="h-px bg-gray-100 my-1" />
 
             <SettingRow
-              icon={<Text className="text-base font-bold text-rose-500">{activeCurrencyObj.symbol}</Text>}
+              icon={<Coins size={20} color="#E11D48" />}
               iconBgColor="bg-rose-50"
               title={t('profile.currency')}
               subtitle={t('profile.currencySub')}
