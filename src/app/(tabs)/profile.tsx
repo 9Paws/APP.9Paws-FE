@@ -234,10 +234,7 @@ export default function ProfileScreen() {
 
     if (value) {
       const res = await LocalAuthentication.authenticateAsync({
-        promptMessage:
-          currentLang === 'vi'
-            ? 'Xác thực sinh trắc học để kích hoạt khóa'
-            : 'Authenticate to enable biometric lock',
+        promptMessage: t('profile.biometricPrompt'),
         fallbackLabel: t('common.cancel'),
       });
 
@@ -247,10 +244,7 @@ export default function ProfileScreen() {
         showToast({
           type: 'success',
           title: t('common.success'),
-          message:
-            currentLang === 'vi'
-              ? 'Đã bật khóa Face ID / Vân tay thành công!'
-              : 'Biometric lock enabled successfully!',
+          message: t('profile.biometricEnabledSuccess'),
         });
       }
     } else {
@@ -259,10 +253,7 @@ export default function ProfileScreen() {
       showToast({
         type: 'info',
         title: t('common.notice'),
-        message:
-          currentLang === 'vi'
-            ? 'Đã tắt khóa Face ID / Vân tay.'
-            : 'Biometric lock disabled.',
+        message: t('profile.biometricDisabledNotice'),
       });
     }
   };
@@ -275,10 +266,7 @@ export default function ProfileScreen() {
         showToast({
           type: 'success',
           title: t('common.success'),
-          message:
-            currentLang === 'vi'
-              ? 'Đã bật thông báo thành công!'
-              : 'Push notifications enabled!',
+          message: t('profile.pushNotificationEnabledSuccess'),
         });
         return;
       }
@@ -290,10 +278,7 @@ export default function ProfileScreen() {
         showToast({
           type: 'success',
           title: t('common.success'),
-          message:
-            currentLang === 'vi'
-              ? 'Đã bật thông báo thành công!'
-              : 'Push notifications enabled!',
+          message: t('profile.pushNotificationEnabledSuccess'),
         });
       } else {
         setPushNotificationEnabled(false);
@@ -301,10 +286,7 @@ export default function ProfileScreen() {
         showToast({
           type: 'info',
           title: t('common.notice'),
-          message:
-            currentLang === 'vi'
-              ? 'Vui lòng cấp quyền thông báo trong Cài đặt thiết bị.'
-              : 'Please enable notification permissions in device settings.',
+          message: t('profile.pushNotificationDisabledNotice'),
         });
       }
     } else {
@@ -313,10 +295,7 @@ export default function ProfileScreen() {
       showToast({
         type: 'info',
         title: t('common.notice'),
-        message:
-          currentLang === 'vi'
-            ? 'Đã tắt nhận thông báo đẩy.'
-            : 'Push notifications disabled.',
+        message: t('profile.pushNotificationOffNotice'),
       });
     }
   };
@@ -330,10 +309,7 @@ export default function ProfileScreen() {
       showToast({
         type: 'info',
         title: t('common.notice'),
-        message:
-          currentLang === 'vi'
-            ? 'Đã tắt nhắc nhở ghi chép hàng ngày.'
-            : 'Daily expense reminder disabled.',
+        message: t('profile.reminderDisabledNotice'),
       });
     }
   };
@@ -345,10 +321,7 @@ export default function ProfileScreen() {
     showToast({
       type: 'success',
       title: t('common.success'),
-      message:
-        currentLang === 'vi'
-          ? `Đã đặt nhắc nhở ghi chép vào ${time} hàng ngày.`
-          : `Expense reminder set for ${time} daily.`,
+      message: t('profile.reminderTimeSetSuccess', { time }),
     });
   };
 
@@ -658,11 +631,7 @@ export default function ProfileScreen() {
               icon={<Bell size={20} color="#3B82F6" />}
               iconBgColor="bg-blue-50"
               title={t('profile.reminder')}
-              subtitle={
-                currentLang === 'vi'
-                  ? `Hàng ngày lúc ${reminderTime} trước khi ngủ`
-                  : `Daily at ${reminderTime} before bedtime`
-              }
+              subtitle={t('profile.reminderSub', { time: reminderTime })}
               onPress={() => {
                 if (reminderEnabled) setIsReminderModalVisible(true);
               }}
@@ -1082,13 +1051,11 @@ export default function ProfileScreen() {
             </View>
 
             <Text className="text-lg font-bold text-text-main text-center font-bold mb-1">
-              {currentLang === 'vi' ? 'Giờ nhắc nhở ghi chép' : 'Daily Reminder Time'}
+              {t('profile.reminderModalTitle')}
             </Text>
 
             <Text className="text-xs text-text-muted text-center font-sans mb-5">
-              {currentLang === 'vi'
-                ? 'Chọn mốc thời gian phù hợp trước khi ngủ để Miu nhắc bạn ghi chép chi tiêu nhé!'
-                : 'Choose a suitable time before bed for Miu to remind you to log your expenses!'}
+              {t('profile.reminderModalDesc')}
             </Text>
 
             {/* Quick time selection pills */}
