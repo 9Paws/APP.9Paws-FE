@@ -17,4 +17,5 @@ export const STORAGE_KEYS = {
   PUSH_NOTIFICATIONS_ENABLED: 'ninepaws_push_notifications_enabled',
   PUSH_PERMISSION_REQUESTED: 'ninepaws_push_permission_requested',
   WALLETS: 'ninepaws_wallets',
+  CURRENCY: 'ninepaws_currency',
 } as const;
