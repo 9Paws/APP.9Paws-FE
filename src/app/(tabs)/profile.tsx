@@ -19,7 +19,6 @@ import { getPushPermissions, requestPushPermissions } from '@/services/notificat
 import {
   Bell,
   BellRing,
-  Bug,
   Check,
   ChevronRight,
   Clock,
@@ -29,7 +28,6 @@ import {
   Globe,
   Heart,
   HelpCircle,
-  Lightbulb,
   LogOut,
   MessageSquare,
   Pencil,
@@ -37,8 +35,6 @@ import {
   QrCode,
   Send,
   Sliders,
-  Sparkles,
-  UserCheck,
   Wallet,
   X,
 } from 'lucide-react-native';
@@ -157,13 +153,10 @@ export default function ProfileScreen() {
   const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
   const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
   const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
-  const [isAboutModalVisible, setIsAboutModalVisible] = useState(false);
 
   // Feedback form state
-  const [feedbackType, setFeedbackType] = useState<'idea' | 'bug' | 'other'>('idea');
   const [feedbackTitle, setFeedbackTitle] = useState('');
   const [feedbackContent, setFeedbackContent] = useState('');
-  const [feedbackEmail, setFeedbackEmail] = useState(user?.email || '');
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   // New Wallet form state
@@ -734,7 +727,7 @@ export default function ProfileScreen() {
               iconBgColor="bg-pink-50"
               title={t('profile.about')}
               subtitle={t('profile.aboutSub')}
-              onPress={() => setIsAboutModalVisible(true)}
+              onPress={() => router.push('/about' as any)}
             />
           </View>
         </View>
@@ -1206,69 +1199,6 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Category selection */}
-            <Text className="text-xs font-semibold text-text-muted mb-2 font-sans">
-              {t('profile.feedbackTypeLabel')}
-            </Text>
-            <View className="flex-row gap-2 mb-3.5">
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setFeedbackType('idea')}
-                className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl border ${
-                  feedbackType === 'idea'
-                    ? 'border-brand bg-orange-50'
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <Lightbulb size={14} color={feedbackType === 'idea' ? '#F15C22' : '#6B7280'} />
-                <Text
-                  className={`ml-1 text-xs font-bold ${
-                    feedbackType === 'idea' ? 'text-brand' : 'text-text-main'
-                  }`}
-                >
-                  {t('profile.feedbackTypeIdea')}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setFeedbackType('bug')}
-                className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl border ${
-                  feedbackType === 'bug'
-                    ? 'border-brand bg-orange-50'
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <Bug size={14} color={feedbackType === 'bug' ? '#F15C22' : '#6B7280'} />
-                <Text
-                  className={`ml-1 text-xs font-bold ${
-                    feedbackType === 'bug' ? 'text-brand' : 'text-text-main'
-                  }`}
-                >
-                  {t('profile.feedbackTypeBug')}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setFeedbackType('other')}
-                className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl border ${
-                  feedbackType === 'other'
-                    ? 'border-brand bg-orange-50'
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <MessageSquare size={14} color={feedbackType === 'other' ? '#F15C22' : '#6B7280'} />
-                <Text
-                  className={`ml-1 text-xs font-bold ${
-                    feedbackType === 'other' ? 'text-brand' : 'text-text-main'
-                  }`}
-                >
-                  {t('profile.feedbackTypeOther')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             {/* Subject input */}
             <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
               {t('profile.feedbackTitleLabel')}
@@ -1287,7 +1217,7 @@ export default function ProfileScreen() {
             <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
               {t('profile.feedbackContentLabel')} *
             </Text>
-            <View className="h-24 w-full rounded-2xl bg-gray-50 border border-gray-200 p-3 mb-3">
+            <View className="h-28 w-full rounded-2xl bg-gray-50 border border-gray-200 p-3 mb-5">
               <TextInput
                 value={feedbackContent}
                 onChangeText={setFeedbackContent}
@@ -1297,22 +1227,6 @@ export default function ProfileScreen() {
                 placeholder={t('profile.feedbackContentPlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 className="text-xs text-text-main font-sans flex-1"
-              />
-            </View>
-
-            {/* Email input */}
-            <Text className="text-xs font-semibold text-text-muted mb-1.5 font-sans">
-              {t('profile.feedbackEmailLabel')}
-            </Text>
-            <View className="h-11 w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 justify-center mb-5">
-              <TextInput
-                value={feedbackEmail}
-                onChangeText={setFeedbackEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholder="you@domain.com"
-                placeholderTextColor="#9CA3AF"
-                className="text-xs text-text-main font-sans"
               />
             </View>
 
@@ -1346,99 +1260,6 @@ export default function ProfileScreen() {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal Về 9Paws (About 9Paws Modal) */}
-      <Modal
-        visible={isAboutModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsAboutModalVisible(false)}
-      >
-        <View className="flex-1 items-center justify-center bg-black/50 px-6">
-          <View className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl items-center">
-            {/* Header Mascot */}
-            <View className="h-20 w-20 rounded-full overflow-hidden bg-amber-100 border-2 border-amber-200 items-center justify-center mb-3">
-              <Image source={MIU_MIU_IMAGE} style={{ width: 62, height: 62 }} resizeMode="contain" />
-            </View>
-
-            <Text className="text-xl font-extrabold text-text-main font-bold">
-              9Paws
-            </Text>
-            <View className="rounded-full bg-orange-100/70 px-2.5 py-0.5 mt-1 mb-2">
-              <Text className="text-[11px] font-bold text-brand">
-                {t('profile.aboutAppVersion')}
-              </Text>
-            </View>
-            <Text className="text-xs text-text-muted text-center font-sans mb-3">
-              {t('profile.aboutTagline')}
-            </Text>
-
-            {/* Story */}
-            <View className="w-full bg-orange-50/50 rounded-2xl p-3 border border-orange-100 mb-4">
-              <Text className="text-xs text-text-main leading-5 text-center font-sans">
-                {t('profile.aboutStory')}
-              </Text>
-            </View>
-
-            {/* Development Team */}
-            <View className="w-full mb-4">
-              <View className="flex-row items-center gap-1 mb-2">
-                <Sparkles size={13} color="#F15C22" />
-                <Text className="text-xs font-bold text-text-main uppercase tracking-wider">
-                  {t('profile.aboutDevTeamTitle')}
-                </Text>
-              </View>
-
-              {/* Nguyen Dai Hung */}
-              <View className="flex-row items-center p-2.5 rounded-xl bg-gray-50 border border-gray-100 mb-2">
-                <View className="h-9 w-9 rounded-full bg-orange-100 items-center justify-center mr-3">
-                  <UserCheck size={18} color="#F15C22" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-xs font-bold text-text-main font-bold">
-                    {t('profile.aboutDevHung')}
-                  </Text>
-                  <Text className="text-[10px] text-text-muted font-sans">
-                    {t('profile.aboutDevRole')}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Hoang Duc Chinh */}
-              <View className="flex-row items-center p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                <View className="h-9 w-9 rounded-full bg-indigo-100 items-center justify-center mr-3">
-                  <UserCheck size={18} color="#4F46E5" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-xs font-bold text-text-main font-bold">
-                    {t('profile.aboutDevChinh')}
-                  </Text>
-                  <Text className="text-[10px] text-text-muted font-sans">
-                    {t('profile.aboutDevRole')}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Copyright & Support */}
-            <Text className="text-[10px] text-text-muted text-center font-sans mb-4">
-              {t('profile.aboutCopyright')}
-              {'\n'}support@9paws.com
-            </Text>
-
-            {/* Close Button */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setIsAboutModalVisible(false)}
-              className="w-full h-11 rounded-2xl bg-brand items-center justify-center shadow-sm"
-            >
-              <Text className="text-sm font-bold text-white font-bold">
-                {t('profile.aboutCloseButton')}
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
