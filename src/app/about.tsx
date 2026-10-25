@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Clock,
   Fingerprint,
+  GraduationCap,
   Heart,
   Lock,
   Mail,
@@ -223,8 +224,20 @@ export default function AboutScreen() {
             </Text>
           </View>
 
+          {/* School / Institution Info */}
+          <View className="flex-row items-center p-3 rounded-2xl bg-orange-50/70 border border-orange-100 mb-3">
+            <View className="h-9 w-9 rounded-xl bg-white items-center justify-center mr-3 border border-orange-100 shadow-xs">
+              <GraduationCap size={18} color="#F15C22" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-xs font-bold text-gray-800 font-bold leading-4">
+                {t('profile.aboutDevSchool')}
+              </Text>
+            </View>
+          </View>
+
           {/* Nguyen Dai Hung */}
-          <View className="flex-row items-center p-3 rounded-2xl bg-gray-50 border border-gray-100 mb-2">
+          <View className="flex-row items-center p-3 rounded-2xl bg-gray-50 border border-gray-100 mb-2.5">
             <View className="h-10 w-10 rounded-full bg-orange-100 items-center justify-center mr-3">
               <UserCheck size={18} color="#F15C22" />
             </View>
