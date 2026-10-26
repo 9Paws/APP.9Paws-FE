@@ -8,6 +8,7 @@ interface UserResponse {
     currency?: string | null;
     language?: string | null;
     createdAt?: string | null;
+    isGoogleLinked?: boolean;
 }
 
 export { UserResponse };

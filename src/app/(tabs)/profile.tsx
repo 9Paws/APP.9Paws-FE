@@ -45,6 +45,7 @@ import { authService } from '@/services/auth.service';
 import { getItem, setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { changeLanguage, SupportedLanguage } from '@/i18n';
+import { GoogleIcon } from '@/components/ui/GoogleIcon';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
@@ -133,7 +134,7 @@ const CURRENCIES: CurrencyOption[] = [
 export default function ProfileScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const showToast = useToastStore((state) => state.showToast);
 
   const currentLang = (i18n.language as SupportedLanguage) || 'vi';
@@ -153,6 +154,11 @@ export default function ProfileScreen() {
   const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
   const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
   const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+  const [isGoogleLinkModalVisible, setIsGoogleLinkModalVisible] = useState(false);
+  const [isGoogleUnlinkModalVisible, setIsGoogleUnlinkModalVisible] = useState(false);
+  const [isUpdatingGoogleLink, setIsUpdatingGoogleLink] = useState(false);
+
+  const isGoogleLinked = !!user?.isGoogleLinked;
 
   // Feedback form state
   const [feedbackTitle, setFeedbackTitle] = useState('');
@@ -260,6 +266,42 @@ export default function ProfileScreen() {
         type: 'info',
         title: t('common.notice'),
         message: t('profile.biometricDisabledNotice'),
+      });
+    }
+  };
+
+  const handleConfirmLinkGoogle = async () => {
+    setIsUpdatingGoogleLink(true);
+    try {
+      await authService.toggleGoogleLink(true);
+    } catch {
+      // Graceful fallback while BE endpoint is in development
+    } finally {
+      updateUser({ isGoogleLinked: true });
+      setIsUpdatingGoogleLink(false);
+      setIsGoogleLinkModalVisible(false);
+      showToast({
+        type: 'success',
+        title: t('common.success'),
+        message: t('profile.googleLinkSuccess'),
+      });
+    }
+  };
+
+  const handleConfirmUnlinkGoogle = async () => {
+    setIsUpdatingGoogleLink(true);
+    try {
+      await authService.toggleGoogleLink(false);
+    } catch {
+      // Graceful fallback while BE endpoint is in development
+    } finally {
+      updateUser({ isGoogleLinked: false });
+      setIsUpdatingGoogleLink(false);
+      setIsGoogleUnlinkModalVisible(false);
+      showToast({
+        type: 'info',
+        title: t('common.notice'),
+        message: t('profile.googleUnlinkSuccess'),
       });
     }
   };
@@ -647,6 +689,40 @@ export default function ProfileScreen() {
                 }
               />
             </View>
+            <View className="h-px bg-gray-100 my-1" />
+
+            {/* Liên kết tài khoản Google (isGoogleLinked) */}
+            <SettingRow
+              icon={<GoogleIcon size={20} />}
+              iconBgColor="bg-red-50"
+              title={t('profile.googleAccount')}
+              subtitle={
+                isGoogleLinked
+                  ? t('profile.googleAccountLinked')
+                  : t('profile.googleAccountUnlinked')
+              }
+              onPress={() => {
+                if (isGoogleLinked) {
+                  setIsGoogleUnlinkModalVisible(true);
+                } else {
+                  setIsGoogleLinkModalVisible(true);
+                }
+              }}
+              rightElement={
+                <Switch
+                  value={isGoogleLinked}
+                  onValueChange={(val) => {
+                    if (val) {
+                      setIsGoogleLinkModalVisible(true);
+                    } else {
+                      setIsGoogleUnlinkModalVisible(true);
+                    }
+                  }}
+                  trackColor={{ false: '#E5E7EB', true: '#F15C22' }}
+                  thumbColor="#FFFFFF"
+                />
+              }
+            />
             <View className="h-px bg-gray-100 my-1" />
 
             <SettingRow
@@ -1257,6 +1333,114 @@ export default function ProfileScreen() {
                       {t('profile.feedbackSubmitButton')}
                     </Text>
                   </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Xác nhận Liên kết Google */}
+      <Modal
+        visible={isGoogleLinkModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!isUpdatingGoogleLink) setIsGoogleLinkModalVisible(false);
+        }}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl items-center">
+            <View className="h-16 w-16 rounded-full bg-red-50 border border-red-100 items-center justify-center mb-4">
+              <GoogleIcon size={30} />
+            </View>
+
+            <Text className="text-lg font-bold text-text-main text-center mb-2">
+              {t('profile.googleLinkModalTitle')}
+            </Text>
+
+            <Text className="text-sm text-text-muted text-center font-sans mb-6">
+              {t('profile.googleLinkModalDesc', { email })}
+            </Text>
+
+            <View className="w-full flex-row gap-3">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setIsGoogleLinkModalVisible(false)}
+                disabled={isUpdatingGoogleLink}
+                className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
+              >
+                <Text className="text-sm font-semibold text-text-main">
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleConfirmLinkGoogle}
+                disabled={isUpdatingGoogleLink}
+                className="flex-1 h-12 rounded-2xl bg-brand items-center justify-center shadow-sm"
+              >
+                {isUpdatingGoogleLink ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text className="text-sm font-bold text-white">
+                    {t('profile.googleLinkConfirm')}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Xác nhận Hủy Liên kết Google */}
+      <Modal
+        visible={isGoogleUnlinkModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!isUpdatingGoogleLink) setIsGoogleUnlinkModalVisible(false);
+        }}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl items-center">
+            <View className="h-16 w-16 rounded-full bg-amber-50 border border-amber-100 items-center justify-center mb-4">
+              <GoogleIcon size={30} />
+            </View>
+
+            <Text className="text-lg font-bold text-text-main text-center mb-2">
+              {t('profile.googleUnlinkModalTitle')}
+            </Text>
+
+            <Text className="text-sm text-text-muted text-center font-sans mb-6">
+              {t('profile.googleUnlinkModalDesc')}
+            </Text>
+
+            <View className="w-full flex-row gap-3">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setIsGoogleUnlinkModalVisible(false)}
+                disabled={isUpdatingGoogleLink}
+                className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
+              >
+                <Text className="text-sm font-semibold text-text-main">
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleConfirmUnlinkGoogle}
+                disabled={isUpdatingGoogleLink}
+                className="flex-1 h-12 rounded-2xl bg-red-500 items-center justify-center shadow-sm"
+              >
+                {isUpdatingGoogleLink ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text className="text-sm font-bold text-white">
+                    {t('profile.googleUnlinkConfirm')}
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>

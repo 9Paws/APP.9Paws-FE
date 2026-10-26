@@ -89,6 +89,15 @@ const authService = {
         const response = await api.post<SuccessResponse>('/auth/change-password', payload);
         return response.data;
     },
+
+    // 12. Cập nhật trạng thái liên kết Google (isGoogleLinked)
+    toggleGoogleLink: async (isGoogleLinked: boolean) => {
+        const response = await api.patch<SingleResponse<{ isGoogleLinked: boolean }>>(
+            '/auth/google-link',
+            { isGoogleLinked }
+        );
+        return response.data;
+    },
 }
 
 export { authService };
