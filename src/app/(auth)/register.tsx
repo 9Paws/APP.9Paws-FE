@@ -145,7 +145,7 @@ export default function RegisterScreen() {
 
           {/* Title */}
           <View className="mb-7 items-center">
-            <Text className="text-2xl font-bold text-text-main font-bold">
+            <Text className="text-2xl font-bold text-text-main">
               {t('auth.register.title')}
             </Text>
             <Text className="mt-2 text-center text-sm text-text-muted font-sans">

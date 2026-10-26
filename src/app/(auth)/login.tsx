@@ -77,7 +77,7 @@ export default function LoginScreen() {
           {/* Badge pill */}
           <View className="mb-8 items-center">
             <View className="flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm border border-gray-100">
-              <Text className="text-xs font-bold text-brand font-semibold">
+              <Text className="text-xs font-semibold text-brand">
                 🔴 9PAWS • {t('common.appTagline')}
               </Text>
             </View>
@@ -96,7 +96,7 @@ export default function LoginScreen() {
 
           {/* Title */}
           <View className="mb-8 items-center">
-            <Text className="text-2xl font-bold text-text-main font-bold">
+            <Text className="text-2xl font-bold text-text-main">
               {t('auth.login.title')}
             </Text>
             <Text className="mt-2 text-center text-sm text-text-muted font-sans">

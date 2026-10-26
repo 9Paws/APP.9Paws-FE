@@ -41,7 +41,7 @@ export default function AboutScreen() {
         >
           <ArrowLeft size={22} color="#1F2937" />
         </TouchableOpacity>
-        <Text className="text-base font-extrabold text-gray-900 font-bold">
+        <Text className="text-base font-extrabold text-gray-900">
           {t('profile.aboutPageTitle')}
         </Text>
       </View>
@@ -60,7 +60,7 @@ export default function AboutScreen() {
             />
           </View>
 
-          <Text className="text-2xl font-black text-gray-900 font-bold tracking-tight">
+          <Text className="text-2xl font-black text-gray-900 tracking-tight">
             9Paws
           </Text>
 
@@ -81,7 +81,7 @@ export default function AboutScreen() {
             <View className="h-7 w-7 rounded-xl bg-orange-50 items-center justify-center border border-orange-100">
               <Sparkles size={15} color="#F15C22" />
             </View>
-            <Text className="text-sm font-extrabold text-gray-900 font-bold">
+            <Text className="text-sm font-extrabold text-gray-900">
               {t('profile.missionTitle')}
             </Text>
           </View>
@@ -96,7 +96,7 @@ export default function AboutScreen() {
             <View className="h-7 w-7 rounded-xl bg-emerald-50 items-center justify-center border border-emerald-200">
               <ShieldCheck size={16} color="#059669" />
             </View>
-            <Text className="text-sm font-extrabold text-emerald-800 font-bold">
+            <Text className="text-sm font-extrabold text-emerald-800">
               {t('profile.privacyTitle')}
             </Text>
           </View>
@@ -105,7 +105,7 @@ export default function AboutScreen() {
           <View className="p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-100 mb-2.5">
             <View className="flex-row items-center gap-1.5 mb-1">
               <Lock size={14} color="#059669" />
-              <Text className="text-xs font-bold text-emerald-900 font-bold">
+              <Text className="text-xs font-bold text-emerald-900">
                 {t('profile.privacyCommitment1Title')}
               </Text>
             </View>
@@ -118,7 +118,7 @@ export default function AboutScreen() {
           <View className="p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-100 mb-2.5">
             <View className="flex-row items-center gap-1.5 mb-1">
               <ShieldCheck size={14} color="#059669" />
-              <Text className="text-xs font-bold text-emerald-900 font-bold">
+              <Text className="text-xs font-bold text-emerald-900">
                 {t('profile.privacyCommitment2Title')}
               </Text>
             </View>
@@ -131,7 +131,7 @@ export default function AboutScreen() {
           <View className="p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-100">
             <View className="flex-row items-center gap-1.5 mb-1">
               <Heart size={14} color="#059669" />
-              <Text className="text-xs font-bold text-emerald-900 font-bold">
+              <Text className="text-xs font-bold text-emerald-900">
                 {t('profile.privacyCommitment3Title')}
               </Text>
             </View>
@@ -147,7 +147,7 @@ export default function AboutScreen() {
             <View className="h-7 w-7 rounded-xl bg-orange-50 items-center justify-center border border-orange-100">
               <Sparkles size={15} color="#F15C22" />
             </View>
-            <Text className="text-sm font-extrabold text-gray-900 font-bold">
+            <Text className="text-sm font-extrabold text-gray-900">
               {t('profile.featuresTitle')}
             </Text>
           </View>
@@ -158,7 +158,7 @@ export default function AboutScreen() {
               <Wallet size={18} color="#F15C22" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-gray-900 font-bold mb-0.5">
+              <Text className="text-xs font-bold text-gray-900 mb-0.5">
                 {t('profile.featureExpenseTitle')}
               </Text>
               <Text className="text-[11px] text-gray-500 leading-4 font-sans">
@@ -173,7 +173,7 @@ export default function AboutScreen() {
               <Users size={18} color="#4F46E5" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-gray-900 font-bold mb-0.5">
+              <Text className="text-xs font-bold text-gray-900 mb-0.5">
                 {t('profile.featureSplitTitle')}
               </Text>
               <Text className="text-[11px] text-gray-500 leading-4 font-sans">
@@ -188,7 +188,7 @@ export default function AboutScreen() {
               <Clock size={18} color="#059669" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-gray-900 font-bold mb-0.5">
+              <Text className="text-xs font-bold text-gray-900 mb-0.5">
                 {t('profile.featureCompanionTitle')}
               </Text>
               <Text className="text-[11px] text-gray-500 leading-4 font-sans">
@@ -203,7 +203,7 @@ export default function AboutScreen() {
               <Fingerprint size={18} color="#7C3AED" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-gray-900 font-bold mb-0.5">
+              <Text className="text-xs font-bold text-gray-900 mb-0.5">
                 {t('profile.featureSecurityTitle')}
               </Text>
               <Text className="text-[11px] text-gray-500 leading-4 font-sans">
@@ -219,7 +219,7 @@ export default function AboutScreen() {
             <View className="h-7 w-7 rounded-xl bg-orange-50 items-center justify-center border border-orange-100">
               <UserCheck size={15} color="#F15C22" />
             </View>
-            <Text className="text-sm font-extrabold text-gray-900 font-bold">
+            <Text className="text-sm font-extrabold text-gray-900">
               {t('profile.aboutDevTeamTitle')}
             </Text>
           </View>
@@ -230,7 +230,7 @@ export default function AboutScreen() {
               <GraduationCap size={18} color="#F15C22" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-gray-800 font-bold leading-4">
+              <Text className="text-xs font-bold text-gray-800 leading-4">
                 {t('profile.aboutDevSchool')}
               </Text>
             </View>
@@ -242,7 +242,7 @@ export default function AboutScreen() {
               <UserCheck size={18} color="#F15C22" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-gray-900 font-bold">
+              <Text className="text-xs font-bold text-gray-900">
                 {t('profile.aboutDevHung')}
               </Text>
               <Text className="text-[10px] text-gray-500 font-sans mt-0.5">
@@ -257,7 +257,7 @@ export default function AboutScreen() {
               <UserCheck size={18} color="#4F46E5" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-gray-900 font-bold">
+              <Text className="text-xs font-bold text-gray-900">
                 {t('profile.aboutDevChinh')}
               </Text>
               <Text className="text-[10px] text-gray-500 font-sans mt-0.5">

@@ -83,7 +83,7 @@ function SettingRow({
         {icon}
       </View>
       <View className="flex-1 mr-2">
-        <Text className="text-sm font-bold text-text-main font-bold">{title}</Text>
+        <Text className="text-sm font-bold text-text-main">{title}</Text>
         {subtitle && (
           <Text className="mt-0.5 text-xs text-text-muted leading-4 font-sans">{subtitle}</Text>
         )}
@@ -470,7 +470,7 @@ export default function ProfileScreen() {
         {/* Top bar */}
         <View className="flex-row items-center justify-between mb-5">
           <View>
-            <Text className="text-lg font-extrabold text-text-main font-bold">
+            <Text className="text-lg font-extrabold text-text-main">
               {t('profile.greeting', { name: firstName })}
             </Text>
             <Text className="mt-0.5 text-xs text-text-muted font-medium">
@@ -507,7 +507,7 @@ export default function ProfileScreen() {
           </View>
 
           <View className="flex-1">
-            <Text className="text-base font-bold text-text-main font-bold">{fullName}</Text>
+            <Text className="text-base font-bold text-text-main">{fullName}</Text>
             <Text className="text-xs text-text-muted mt-0.5 font-sans">{email}</Text>
           </View>
 
@@ -551,7 +551,7 @@ export default function ProfileScreen() {
               <View className="h-12 w-12 rounded-full bg-orange-50 items-center justify-center mb-2.5">
                 <Wallet size={22} color="#F15C22" />
               </View>
-              <Text className="text-sm font-bold text-text-main font-bold">
+              <Text className="text-sm font-bold text-text-main">
                 {t('profile.emptyWalletsTitle')}
               </Text>
               <Text className="text-xs text-text-muted mt-1 text-center font-sans">
@@ -740,7 +740,7 @@ export default function ProfileScreen() {
           className="h-14 w-full flex-row items-center justify-center gap-x-2.5 rounded-2xl bg-red-50 border border-red-200/70 shadow-sm mb-4"
         >
           <LogOut size={18} color="#EF4444" />
-          <Text className="text-base font-bold text-red-500 font-bold">
+          <Text className="text-base font-bold text-red-500">
             {isLoggingOut ? '...' : t('profile.logoutButton')}
           </Text>
         </TouchableOpacity>
@@ -761,7 +761,7 @@ export default function ProfileScreen() {
           />
           <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-100">
-              <Text className="text-lg font-bold text-text-main font-bold">
+              <Text className="text-lg font-bold text-text-main">
                 {t('profile.selectLanguage')}
               </Text>
               <TouchableOpacity
@@ -783,7 +783,7 @@ export default function ProfileScreen() {
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-3">🇻🇳</Text>
                 <View>
-                  <Text className="text-sm font-bold text-text-main font-bold">Tiếng Việt</Text>
+                  <Text className="text-sm font-bold text-text-main">Tiếng Việt</Text>
                   <Text className="text-xs text-text-muted font-sans">Việt Nam</Text>
                 </View>
               </View>
@@ -801,7 +801,7 @@ export default function ProfileScreen() {
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-3">🇬🇧</Text>
                 <View>
-                  <Text className="text-sm font-bold text-text-main font-bold">English</Text>
+                  <Text className="text-sm font-bold text-text-main">English</Text>
                   <Text className="text-xs text-text-muted font-sans">Global / US</Text>
                 </View>
               </View>
@@ -819,7 +819,7 @@ export default function ProfileScreen() {
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-3">🇨🇳</Text>
                 <View>
-                  <Text className="text-sm font-bold text-text-main font-bold">中文</Text>
+                  <Text className="text-sm font-bold text-text-main">中文</Text>
                   <Text className="text-xs text-text-muted font-sans">简体中文 (China)</Text>
                 </View>
               </View>
@@ -837,7 +837,7 @@ export default function ProfileScreen() {
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-3">🇰🇷</Text>
                 <View>
-                  <Text className="text-sm font-bold text-text-main font-bold">한국어</Text>
+                  <Text className="text-sm font-bold text-text-main">한국어</Text>
                   <Text className="text-xs text-text-muted font-sans">대한민국 (Korea)</Text>
                 </View>
               </View>
@@ -855,7 +855,7 @@ export default function ProfileScreen() {
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-3">🇯🇵</Text>
                 <View>
-                  <Text className="text-sm font-bold text-text-main font-bold">日本語</Text>
+                  <Text className="text-sm font-bold text-text-main">日本語</Text>
                   <Text className="text-xs text-text-muted font-sans">日本 (Japan)</Text>
                 </View>
               </View>
@@ -878,7 +878,7 @@ export default function ProfileScreen() {
               <LogOut size={26} color="#EF4444" />
             </View>
 
-            <Text className="text-lg font-bold text-text-main text-center font-bold mb-2">
+            <Text className="text-lg font-bold text-text-main text-center mb-2">
               {t('profile.logoutConfirmTitle')}
             </Text>
 
@@ -892,7 +892,7 @@ export default function ProfileScreen() {
                 onPress={() => setIsLogoutModalVisible(false)}
                 className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
               >
-                <Text className="text-sm font-semibold text-text-main font-bold">
+                <Text className="text-sm font-semibold text-text-main">
                   {t('common.cancel')}
                 </Text>
               </TouchableOpacity>
@@ -906,7 +906,7 @@ export default function ProfileScreen() {
                 {isLoggingOut ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text className="text-sm font-bold text-white font-bold">
+                  <Text className="text-sm font-bold text-white">
                     {t('profile.logoutButton')}
                   </Text>
                 )}
@@ -930,7 +930,7 @@ export default function ProfileScreen() {
           />
           <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-100 mb-4">
-              <Text className="text-lg font-bold text-text-main font-bold">
+              <Text className="text-lg font-bold text-text-main">
                 {t('profile.modalAddSourceTitle')}
               </Text>
               <TouchableOpacity
@@ -1040,7 +1040,7 @@ export default function ProfileScreen() {
                 onPress={() => setIsAddWalletModalVisible(false)}
                 className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
               >
-                <Text className="text-sm font-semibold text-text-main font-bold">
+                <Text className="text-sm font-semibold text-text-main">
                   {t('common.cancel')}
                 </Text>
               </TouchableOpacity>
@@ -1050,7 +1050,7 @@ export default function ProfileScreen() {
                 onPress={handleCreateWallet}
                 className="flex-1 h-12 rounded-2xl bg-brand items-center justify-center shadow-sm"
               >
-                <Text className="text-sm font-bold text-white font-bold">
+                <Text className="text-sm font-bold text-white">
                   {t('profile.confirmAddSource')}
                 </Text>
               </TouchableOpacity>
@@ -1072,7 +1072,7 @@ export default function ProfileScreen() {
               <Clock size={28} color="#3B82F6" />
             </View>
 
-            <Text className="text-lg font-bold text-text-main text-center font-bold mb-1">
+            <Text className="text-lg font-bold text-text-main text-center mb-1">
               {t('profile.reminderModalTitle')}
             </Text>
 
@@ -1094,7 +1094,7 @@ export default function ProfileScreen() {
                   }`}
                 >
                   <Text
-                    className={`text-sm font-bold font-bold ${
+                    className={`text-sm font-bold ${
                       reminderTime === time ? 'text-blue-600' : 'text-text-main'
                     }`}
                   >
@@ -1109,7 +1109,7 @@ export default function ProfileScreen() {
               onPress={() => setIsReminderModalVisible(false)}
               className="w-full h-12 rounded-2xl bg-gray-100 items-center justify-center"
             >
-              <Text className="text-sm font-semibold text-text-main font-bold">
+              <Text className="text-sm font-semibold text-text-main">
                 {t('common.cancel')}
               </Text>
             </TouchableOpacity>
@@ -1132,7 +1132,7 @@ export default function ProfileScreen() {
           />
           <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-100 mb-2">
-              <Text className="text-lg font-bold text-text-main font-bold">
+              <Text className="text-lg font-bold text-text-main">
                 {t('profile.currencyModalTitle')}
               </Text>
               <TouchableOpacity
@@ -1157,7 +1157,7 @@ export default function ProfileScreen() {
                   <View className="flex-row items-center">
                     <Text className="text-2xl mr-3">{curr.flag}</Text>
                     <View>
-                      <Text className="text-sm font-bold text-text-main font-bold">
+                      <Text className="text-sm font-bold text-text-main">
                         {curr.name} ({curr.code})
                       </Text>
                       <Text className="text-xs text-text-muted font-sans">
@@ -1188,7 +1188,7 @@ export default function ProfileScreen() {
           />
           <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-100 mb-3">
-              <Text className="text-lg font-bold text-text-main font-bold">
+              <Text className="text-lg font-bold text-text-main">
                 {t('profile.feedbackModalTitle')}
               </Text>
               <TouchableOpacity
@@ -1237,7 +1237,7 @@ export default function ProfileScreen() {
                 onPress={() => setIsFeedbackModalVisible(false)}
                 className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
               >
-                <Text className="text-sm font-semibold text-text-main font-bold">
+                <Text className="text-sm font-semibold text-text-main">
                   {t('common.cancel')}
                 </Text>
               </TouchableOpacity>
@@ -1253,7 +1253,7 @@ export default function ProfileScreen() {
                 ) : (
                   <>
                     <Send size={15} color="#FFFFFF" />
-                    <Text className="text-sm font-bold text-white font-bold">
+                    <Text className="text-sm font-bold text-white">
                       {t('profile.feedbackSubmitButton')}
                     </Text>
                   </>

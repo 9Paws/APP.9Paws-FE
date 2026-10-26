@@ -224,7 +224,7 @@ export default function ForgotPasswordScreen() {
               <Image source={MIU_MIU_IMAGE} style={{ width: 60, height: 60 }} resizeMode="contain" />
             </View>
 
-            <Text className="mt-4 text-2xl font-bold text-text-main font-bold">
+            <Text className="mt-4 text-2xl font-bold text-text-main">
               {step === 'EMAIL' && t('auth.forgotPassword.title')}
               {step === 'OTP' && t('auth.forgotPassword.otpTitle')}
               {step === 'NEW_PASSWORD' && t('auth.forgotPassword.newPasswordTitle')}
@@ -284,12 +284,12 @@ export default function ForgotPasswordScreen() {
                 <Text className="text-sm text-text-muted font-sans">
                   {t('auth.otp.expiresIn')}
                 </Text>
-                <Text className="text-sm font-bold text-brand font-bold ml-1">
+                <Text className="text-sm font-bold text-brand ml-1">
                   {isExpired ? t('auth.otp.expired') : `${seconds}s`}
                 </Text>
                 {isExpired && (
                   <TouchableOpacity onPress={handleResendOtp} className="ml-2">
-                    <Text className="text-sm font-bold text-brand underline font-bold">
+                    <Text className="text-sm font-bold text-brand underline">
                       {t('auth.otp.resendCode')}
                     </Text>
                   </TouchableOpacity>
@@ -334,7 +334,7 @@ export default function ForgotPasswordScreen() {
                   <View className="flex-row items-center justify-between mb-1">
                     <Text className="text-xs text-text-muted font-sans">Độ mạnh mật khẩu</Text>
                     <Text
-                      className={`text-xs font-bold font-bold ${
+                      className={`text-xs font-bold ${
                         strength === 'weak'
                           ? 'text-red-500'
                           : strength === 'medium'
@@ -393,7 +393,7 @@ export default function ForgotPasswordScreen() {
           {/* Footer: Back to login */}
           <View className="mt-8 flex-row items-center justify-center">
             <TouchableOpacity onPress={() => router.replace('/(auth)/login' as any)}>
-              <Text className="text-sm font-bold text-brand font-bold">
+              <Text className="text-sm font-bold text-brand">
                 ← {t('auth.forgotPassword.backToLogin')}
               </Text>
             </TouchableOpacity>

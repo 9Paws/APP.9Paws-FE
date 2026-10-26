@@ -146,7 +146,7 @@ export default function OtpScreen() {
 
           {/* Title */}
           <View className="mb-4 items-center">
-            <Text className="text-2xl font-extrabold text-text-main font-bold">
+            <Text className="text-2xl font-extrabold text-text-main">
               {t('auth.otp.title')}
             </Text>
             <Text className="mt-1 text-center text-sm text-text-muted font-sans">
@@ -157,7 +157,7 @@ export default function OtpScreen() {
           {/* Email badge pill */}
           <View className="mb-8 items-center">
             <View className="rounded-full border border-gray-200 bg-white px-5 py-2 shadow-sm">
-              <Text className="text-sm font-semibold text-text-main font-medium">{email}</Text>
+              <Text className="text-sm font-medium text-text-main">{email}</Text>
             </View>
           </View>
 

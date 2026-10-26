@@ -240,7 +240,7 @@ export default function EditProfileScreen() {
           >
             <ArrowLeft size={22} color="#1F2937" />
           </TouchableOpacity>
-          <Text className="text-base font-extrabold text-gray-900 font-bold" numberOfLines={1}>
+          <Text className="text-base font-extrabold text-gray-900" numberOfLines={1}>
             {t('profile.editProfilePageTitle')}
           </Text>
         </View>
@@ -305,7 +305,7 @@ export default function EditProfileScreen() {
             </View>
 
             {/* User Full Name */}
-            <Text className="text-lg font-extrabold text-gray-900 mt-3 font-bold">
+            <Text className="text-lg font-extrabold text-gray-900 mt-3">
               {fullName}
             </Text>
 
@@ -320,7 +320,7 @@ export default function EditProfileScreen() {
 
           {/* Card 1: Thông tin hồ sơ */}
           <View className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm mx-5 mb-5">
-            <Text className="text-base font-extrabold text-gray-900 mb-4 font-bold">
+            <Text className="text-base font-extrabold text-gray-900 mb-4">
               {t('profile.profileInfoCardTitle')}
             </Text>
 
@@ -381,7 +381,7 @@ export default function EditProfileScreen() {
                   <Lock size={17} color="#F15C22" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-base font-extrabold text-gray-900 font-bold">
+                  <Text className="text-base font-extrabold text-gray-900">
                     {t('profile.changePasswordCardTitle')}
                   </Text>
                   <Text className="text-xs text-gray-400 mt-0.5 font-sans" numberOfLines={1}>
@@ -498,7 +498,7 @@ export default function EditProfileScreen() {
               ) : (
                 <>
                   <Check size={18} color="#FFFFFF" />
-                  <Text className="ml-2 text-white font-bold text-sm font-bold">
+                  <Text className="ml-2 text-white text-sm font-bold">
                     {t('profile.saveProfileChanges')}
                   </Text>
                 </>
@@ -510,7 +510,7 @@ export default function EditProfileScreen() {
               onPress={() => router.back()}
               className="h-13 py-3.5 rounded-2xl bg-[#EBE5DE] items-center justify-center active:bg-gray-300"
             >
-              <Text className="text-[#4A453E] font-bold text-sm font-bold">
+              <Text className="text-[#4A453E] text-sm font-bold">
                 {t('profile.cancelButton')}
               </Text>
             </TouchableOpacity>
@@ -528,7 +528,7 @@ export default function EditProfileScreen() {
         <View className="flex-1 items-center justify-center bg-black/50 px-5">
           <View className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-base font-extrabold text-gray-900 font-bold">
+              <Text className="text-base font-extrabold text-gray-900">
                 {t('profile.chooseAvatar')}
               </Text>
               <TouchableOpacity
@@ -549,7 +549,7 @@ export default function EditProfileScreen() {
                 <ImageIcon size={20} color="#FFFFFF" />
               </View>
               <View className="flex-1">
-                <Text className="text-sm font-bold text-text-main font-bold">
+                <Text className="text-sm font-bold text-text-main">
                   {t('profile.chooseFromLibrary')}
                 </Text>
                 <Text className="text-[11px] text-text-muted mt-0.5 font-sans">
