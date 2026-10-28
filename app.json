@@ -8,14 +8,16 @@
     "scheme": "app9pawsfe",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ninepaws.app"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FAF7F2",
         "foregroundImage": "./assets/images/icon.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ninepaws.app"
     },
     "web": {
       "output": "server",
