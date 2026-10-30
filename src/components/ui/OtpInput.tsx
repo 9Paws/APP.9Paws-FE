@@ -54,7 +54,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
     };
 
     return (
-        <View className="w-full flex-row justify-between">
+        <View className="w-full flex-row justify-center items-center gap-x-1.5 sm:gap-x-2.5">
             {Array.from({ length }).map((_, index) => {
                 const isActive = otp.length === index;
                 const isFilled = Boolean(digits[index]);
@@ -62,7 +62,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
                 return (
                     <View
                         key={index}
-                        className={`h-16 w-12 items-center justify-center rounded-2xl border-2 bg-white shadow-sm ${isActive
+                        className={`flex-1 max-w-[50px] min-w-[36px] aspect-[3/4] items-center justify-center rounded-2xl border-2 bg-white shadow-sm ${isActive
                             ? 'border-brand bg-orange-50/20'
                             : isFilled
                                 ? 'border-brand/80'
@@ -80,7 +80,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
                             textContentType="oneTimeCode"
                             maxLength={length}
                             textAlign="center"
-                            className="h-full w-full text-center text-2xl font-bold text-text-main"
+                            className="h-full w-full text-center text-xl sm:text-2xl font-bold text-text-main"
                         />
                     </View>
                 );
