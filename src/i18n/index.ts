@@ -21,44 +21,48 @@ export const resources = {
 } as const;
 
 export type SupportedLanguage = 'vi' | 'en' | 'zh' | 'ko' | 'ja';
+export const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['vi', 'en', 'zh', 'ko', 'ja'];
 
 /**
  * Lấy ngôn ngữ mặc định từ thiết bị:
+ * Nếu ngôn ngữ máy nằm trong danh sách hỗ trợ ('vi', 'en', 'zh', 'ko', 'ja') thì sử dụng.
+ * Nếu không có trong danh sách thì mặc định (default) là tiếng Anh ('en').
  */
 export function getDeviceLanguage(): SupportedLanguage {
   const locales = getLocales();
   const primaryLang = locales[0]?.languageCode;
-  if (primaryLang === 'en' || primaryLang === 'zh' || primaryLang === 'ko' || primaryLang === 'ja') {
-    return primaryLang;
+  if (primaryLang && (SUPPORTED_LANGUAGES as readonly string[]).includes(primaryLang)) {
+    return primaryLang as SupportedLanguage;
   }
-  return 'vi';
+  return 'en';
+}
+
+// Khởi tạo i18n đồng bộ ngay khi load module để tránh lỗi NO_I18NEXT_INSTANCE khi component render sớm
+if (!i18n.isInitialized) {
+  i18n.use(initReactI18next).init({
+    resources,
+    lng: getDeviceLanguage(),
+    fallbackLng: 'en',
+    compatibilityJSON: 'v4',
+    interpolation: {
+      escapeValue: false,
+    },
+  });
 }
 
 /**
- * Khởi tạo i18n
+ * Nạp ngôn ngữ người dùng đã lưu từ SecureStore
  */
 export async function initI18n(): Promise<void> {
-  let initialLanguage = getDeviceLanguage();
-
   try {
     const savedLanguage = (await getItem(STORAGE_KEYS.LANGUAGE)) as SupportedLanguage | null;
-    if (savedLanguage && (['vi', 'en', 'zh', 'ko', 'ja'] as SupportedLanguage[]).includes(savedLanguage)) {
-      initialLanguage = savedLanguage;
+    if (savedLanguage && SUPPORTED_LANGUAGES.includes(savedLanguage)) {
+      if (i18n.language !== savedLanguage) {
+        await i18n.changeLanguage(savedLanguage);
+      }
     }
   } catch {
     // Giữ nguyên ngôn ngữ thiết bị nếu không đọc được storage
-  }
-
-  if (!i18n.isInitialized) {
-    await i18n.use(initReactI18next).init({
-      resources,
-      lng: initialLanguage,
-      fallbackLng: 'vi',
-      compatibilityJSON: 'v4',
-      interpolation: {
-        escapeValue: false,
-      },
-    });
   }
 }
 
@@ -66,8 +70,9 @@ export async function initI18n(): Promise<void> {
  * Đổi ngôn ngữ và lưu vào SecureStore
  */
 export async function changeLanguage(lang: SupportedLanguage): Promise<void> {
-  await i18n.changeLanguage(lang);
-  await setItem(STORAGE_KEYS.LANGUAGE, lang);
+  const targetLang = SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en';
+  await i18n.changeLanguage(targetLang);
+  await setItem(STORAGE_KEYS.LANGUAGE, targetLang);
 }
 
 export default i18n;
