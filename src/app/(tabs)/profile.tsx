@@ -42,6 +42,8 @@ import {
 import { useAuthStore } from '@/stores/auth.store';
 import { useToastStore } from '@/stores/toast.store';
 import { authService } from '@/services/auth.service';
+import { userService } from '@/services/user.service';
+import { googleAuthService } from '@/services/google-auth.service';
 import { getItem, setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { changeLanguage, SupportedLanguage } from '@/i18n';
@@ -137,7 +139,10 @@ export default function ProfileScreen() {
   const { user, logout, updateUser } = useAuthStore();
   const showToast = useToastStore((state) => state.showToast);
 
-  const currentLang = (i18n.language as SupportedLanguage) || 'vi';
+  const supportedLangs: SupportedLanguage[] = ['vi', 'en', 'zh', 'ko', 'ja'];
+  const currentLang = supportedLangs.includes(i18n.language as SupportedLanguage)
+    ? (i18n.language as SupportedLanguage)
+    : 'en';
 
   const [wallets, setWallets] = useState<WalletItem[]>([]);
 
@@ -155,7 +160,6 @@ export default function ProfileScreen() {
   const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
   const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
   const [isGoogleLinkModalVisible, setIsGoogleLinkModalVisible] = useState(false);
-  const [isGoogleUnlinkModalVisible, setIsGoogleUnlinkModalVisible] = useState(false);
   const [isUpdatingGoogleLink, setIsUpdatingGoogleLink] = useState(false);
 
   const isGoogleLinked = !!user?.isGoogleLinked;
@@ -237,7 +241,26 @@ export default function ProfileScreen() {
     getItem(STORAGE_KEYS.REMINDER_TIME).then((val) => {
       if (val) setReminderTime(val);
     });
-  }, []);
+
+    // Lấy thông tin người dùng mới nhất từ server
+    userService.getProfile().then(async (res) => {
+      if (res?.data) {
+        const localAvatar = await getItem(STORAGE_KEYS.AVATAR);
+        updateUser({
+          fullName: res.data.fullName,
+          phoneNumber: res.data.phoneNumber,
+          avatarUrl: res.data.avatarUrl || localAvatar || user?.avatarUrl,
+          isGoogleLinked: res.data.isGoogleLinked,
+          companionDays: res.data.companionDays,
+        });
+        // Chỉ load dữ liệu currency từ BE, tuyệt đối không đọc Language hay Push notification từ BE
+        if (res.data.settings?.currency) {
+          setCurrentCurrency(res.data.settings.currency);
+          await setItem(STORAGE_KEYS.CURRENCY, res.data.settings.currency);
+        }
+      }
+    }).catch(() => {});
+  }, [updateUser, user?.avatarUrl]);
 
   const handleToggleBiometric = async (value: boolean) => {
     if (!isBiometricSupported) {
@@ -273,36 +296,60 @@ export default function ProfileScreen() {
   const handleConfirmLinkGoogle = async () => {
     setIsUpdatingGoogleLink(true);
     try {
-      await authService.toggleGoogleLink(true);
-    } catch {
-      // Graceful fallback while BE endpoint is in development
-    } finally {
-      updateUser({ isGoogleLinked: true });
-      setIsUpdatingGoogleLink(false);
+      if (!googleAuthService.isAvailable()) {
+        showToast({
+          type: 'info',
+          title: 'Google Sign-In',
+          message:
+            'Tính năng liên kết Google yêu cầu chạy trên bản Development Build thiết bị thật (APK) để kết nối Google Play Services.',
+        });
+        setIsGoogleLinkModalVisible(false);
+        return;
+      }
+
+      const { idToken } = await googleAuthService.signIn();
+      const res = await userService.linkGoogle({ idToken });
+
+      updateUser({ isGoogleLinked: res.data?.isGoogleLinked ?? true });
       setIsGoogleLinkModalVisible(false);
       showToast({
         type: 'success',
         title: t('common.success'),
         message: t('profile.googleLinkSuccess'),
       });
-    }
-  };
+    } catch (err: any) {
+      if (
+        err?.code === 'SIGN_IN_CANCELLED' ||
+        err?.code === '13' ||
+        err?.message?.includes('cancelled') ||
+        err?.message?.includes('CANCELED')
+      ) {
+        setIsGoogleLinkModalVisible(false);
+        return;
+      }
 
-  const handleConfirmUnlinkGoogle = async () => {
-    setIsUpdatingGoogleLink(true);
-    try {
-      await authService.toggleGoogleLink(false);
-    } catch {
-      // Graceful fallback while BE endpoint is in development
-    } finally {
-      updateUser({ isGoogleLinked: false });
-      setIsUpdatingGoogleLink(false);
-      setIsGoogleUnlinkModalVisible(false);
+      if (err?.message?.includes('GOOGLE_NATIVE_UNAVAILABLE')) {
+        showToast({
+          type: 'info',
+          title: 'Google Sign-In',
+          message:
+            'Tính năng liên kết Google yêu cầu chạy trên bản Development Build thiết bị thật (APK) để kết nối Google Play Services.',
+        });
+        setIsGoogleLinkModalVisible(false);
+        return;
+      }
+
+      const errMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Liên kết Google thất bại. Vui lòng kiểm tra lại tài khoản Google của bạn.';
       showToast({
-        type: 'info',
-        title: t('common.notice'),
-        message: t('profile.googleUnlinkSuccess'),
+        type: 'error',
+        title: t('common.error'),
+        message: errMsg,
       });
+    } finally {
+      setIsUpdatingGoogleLink(false);
     }
   };
 
@@ -419,6 +466,12 @@ export default function ProfileScreen() {
     setCurrentCurrency(curr.code);
     await setItem(STORAGE_KEYS.CURRENCY, curr.code);
     setIsCurrencyModalVisible(false);
+
+    // Đồng bộ lên server chỉ trường currency (PATCH)
+    userService.updateSettings({ currency: curr.code }).catch((err) => {
+      console.warn('[Profile] Failed to sync currency setting to server:', err);
+    });
+
     showToast({
       type: 'success',
       title: t('profile.currencyChangedTitle'),
@@ -464,7 +517,7 @@ export default function ProfileScreen() {
       case 'ja':
         return '日本語';
       default:
-        return 'Tiếng Việt';
+        return 'English';
     }
   };
 
@@ -474,6 +527,7 @@ export default function ProfileScreen() {
   const handleSelectLanguage = async (lang: SupportedLanguage) => {
     await changeLanguage(lang);
     setIsLangModalVisible(false);
+
     showToast({
       type: 'success',
       title: t('profile.langChangedTitle'),
@@ -703,24 +757,34 @@ export default function ProfileScreen() {
               }
               onPress={() => {
                 if (isGoogleLinked) {
-                  setIsGoogleUnlinkModalVisible(true);
+                  showToast({
+                    type: 'info',
+                    title: t('common.notice'),
+                    message: t('profile.googleAlreadyLinkedNotice'),
+                  });
                 } else {
                   setIsGoogleLinkModalVisible(true);
                 }
               }}
               rightElement={
-                <Switch
-                  value={isGoogleLinked}
-                  onValueChange={(val) => {
-                    if (val) {
-                      setIsGoogleLinkModalVisible(true);
-                    } else {
-                      setIsGoogleUnlinkModalVisible(true);
-                    }
-                  }}
-                  trackColor={{ false: '#E5E7EB', true: '#F15C22' }}
-                  thumbColor="#FFFFFF"
-                />
+                isGoogleLinked ? (
+                  <View className="flex-row items-center bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full">
+                    <Check size={13} color="#059669" />
+                    <Text className="ml-1 text-xs font-semibold text-emerald-700">
+                      {t('profile.googleLinkedBadge')}
+                    </Text>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setIsGoogleLinkModalVisible(true)}
+                    className="bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full"
+                  >
+                    <Text className="text-xs font-bold text-brand">
+                      {t('profile.linkGoogleNow')}
+                    </Text>
+                  </TouchableOpacity>
+                )
               }
             />
             <View className="h-px bg-gray-100 my-1" />
@@ -1386,60 +1450,6 @@ export default function ProfileScreen() {
                 ) : (
                   <Text className="text-sm font-bold text-white">
                     {t('profile.googleLinkConfirm')}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal Xác nhận Hủy Liên kết Google */}
-      <Modal
-        visible={isGoogleUnlinkModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          if (!isUpdatingGoogleLink) setIsGoogleUnlinkModalVisible(false);
-        }}
-      >
-        <View className="flex-1 items-center justify-center bg-black/50 px-6">
-          <View className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl items-center">
-            <View className="h-16 w-16 rounded-full bg-amber-50 border border-amber-100 items-center justify-center mb-4">
-              <GoogleIcon size={30} />
-            </View>
-
-            <Text className="text-lg font-bold text-text-main text-center mb-2">
-              {t('profile.googleUnlinkModalTitle')}
-            </Text>
-
-            <Text className="text-sm text-text-muted text-center font-sans mb-6">
-              {t('profile.googleUnlinkModalDesc')}
-            </Text>
-
-            <View className="w-full flex-row gap-3">
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setIsGoogleUnlinkModalVisible(false)}
-                disabled={isUpdatingGoogleLink}
-                className="flex-1 h-12 rounded-2xl bg-gray-100 items-center justify-center"
-              >
-                <Text className="text-sm font-semibold text-text-main">
-                  {t('common.cancel')}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={handleConfirmUnlinkGoogle}
-                disabled={isUpdatingGoogleLink}
-                className="flex-1 h-12 rounded-2xl bg-red-500 items-center justify-center shadow-sm"
-              >
-                {isUpdatingGoogleLink ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text className="text-sm font-bold text-white">
-                    {t('profile.googleUnlinkConfirm')}
                   </Text>
                 )}
               </TouchableOpacity>
