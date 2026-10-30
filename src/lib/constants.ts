@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
   DEFAULT_CURRENCY: 'VND',
-  DEFAULT_LANGUAGE: 'vi',
+  DEFAULT_LANGUAGE: 'en',
   OTP_LENGTH: 6,
   OTP_COUNTDOWN_SECONDS: 105,
 } as const;
@@ -18,4 +18,5 @@ export const STORAGE_KEYS = {
   PUSH_PERMISSION_REQUESTED: 'ninepaws_push_permission_requested',
   WALLETS: 'ninepaws_wallets',
   CURRENCY: 'ninepaws_currency',
+  AVATAR: 'ninepaws_avatar',
 } as const;

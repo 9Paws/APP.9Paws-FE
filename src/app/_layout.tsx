@@ -1,11 +1,13 @@
 import '../global.css';
 import '@/lib/suppress-warnings';
+import { initI18n } from '@/i18n';
 import React, { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ActivityIndicator, Platform, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
+import * as SplashScreen from 'expo-splash-screen';
 
 import {
   useFonts,
@@ -18,12 +20,14 @@ import {
 
 import { useAuthStore } from '@/stores/auth.store';
 import { Toast } from '@/components/ui/Toast';
-import { initI18n } from '@/i18n';
+import { AnimatedSplashScreen } from '@/components/ui/AnimatedSplashScreen';
 import { api } from '@/lib/api';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { getItem, setItem } from '@/lib/secure-storage';
 import { requestPushPermissions, setupNotificationHandler } from '@/services/notification.service';
+import { googleAuthService } from '@/services/google-auth.service';
 
+SplashScreen.preventAutoHideAsync().catch(() => {});
 setupNotificationHandler();
 
 export default function RootLayout() {
@@ -31,6 +35,8 @@ export default function RootLayout() {
   const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
   const [isI18nReady, setIsI18nReady] = useState(false);
   const [isBiometricVerified, setIsBiometricVerified] = useState(false);
+  const [minSplashTimePassed, setMinSplashTimePassed] = useState(false);
+  const [isSplashFinished, setIsSplashFinished] = useState(false);
 
   const [fontsLoaded] = useFonts({
     BeVietnamPro_400Regular,
@@ -41,6 +47,21 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    // Hide static native splash as soon as our React tree mounts
+    SplashScreen.hideAsync().catch(() => {});
+
+    // Giữ splash animation tối thiểu 1.4s để hiệu ứng xuất hiện mượt mà
+    const timer = setTimeout(() => {
+      setMinSplashTimePassed(true);
+    }, 1400);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Khởi tạo cấu hình Google Sign-In SDK
+    googleAuthService.configure();
+
     // Pre-warm kết nối backend ngầm ngay khi app vừa mở
     api.get('/', { timeout: 4000 }).catch(() => {});
 
@@ -97,24 +118,27 @@ export default function RootLayout() {
     }
   }, [isLoading, fontsLoaded, isI18nReady, isAuthenticated, isBiometricVerified, router]);
 
-  if (isLoading || !fontsLoaded || !isI18nReady) {
+  const isAppReady = fontsLoaded && isI18nReady && !isLoading && minSplashTimePassed;
+
+  if (!fontsLoaded || !isI18nReady) {
     return (
-      <View className="flex-1 items-center justify-center bg-background-warm">
-        <ActivityIndicator size="large" color="#F15C22" />
+      <View style={{ flex: 1 }}>
+        <AnimatedSplashScreen isReady={false} />
       </View>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView className="flex-1 bg-background-warm">
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: '#FAF7F2' },
-          }}
-        />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
         <Toast />
+        {!isSplashFinished && (
+          <AnimatedSplashScreen
+            isReady={isAppReady}
+            onFinish={() => setIsSplashFinished(true)}
+          />
+        )}
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

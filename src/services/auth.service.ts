@@ -3,6 +3,7 @@ import type {
     AuthResponse,
     ChangePasswordRequest,
     ForgotPasswordRequest,
+    GoogleLoginRequest,
     LoginRequest,
     RefreshTokenRequest,
     RegisterRequest,
@@ -15,7 +16,7 @@ import type {
 } from '@/types';
 
 const authService = {
-    // 1. Đăng nhập
+    // 1. Đăng nhập bằng Email & Mật khẩu
     login: async (payload: LoginRequest) => {
         const response = await api.post<SingleResponse<AuthResponse>>('/auth/login', payload);
         return response.data;
@@ -89,6 +90,12 @@ const authService = {
         const response = await api.post<SuccessResponse>('/auth/change-password', payload);
         return response.data;
     },
-}
+
+    // 12. Đăng nhập bằng Google ID Token
+    googleLogin: async (payload: GoogleLoginRequest) => {
+        const response = await api.post<SingleResponse<AuthResponse>>('/auth/google', payload);
+        return response.data;
+    },
+};
 
 export { authService };

@@ -44,19 +44,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     isLoading: true,
 
     setAuth: async ({ accessToken, refreshToken, user }) => {
+        const savedAvatar = await getItem(STORAGE_KEYS.AVATAR);
+        const enrichedUser: UserResponse = {
+            ...user,
+            avatarUrl: user.avatarUrl || savedAvatar || null,
+            createdAt: user.createdAt || new Date().toISOString(),
+        };
         await Promise.all([
             setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken),
             setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken),
-            setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
+            setItem(STORAGE_KEYS.USER, JSON.stringify(enrichedUser)),
         ]);
 
-        set({ user, isAuthenticated: true, isLoading: false });
+        set({ user: enrichedUser, isAuthenticated: true, isLoading: false });
     },
 
     updateUser: (fields) => {
         const user = get().user;
         if (user) {
             const updated = { ...user, ...fields };
+            if (fields.avatarUrl) {
+                setItem(STORAGE_KEYS.AVATAR, fields.avatarUrl).catch(() => {});
+            }
             setItem(STORAGE_KEYS.USER, JSON.stringify(updated)).catch(() => {});
             set({ user: updated });
         }
@@ -74,15 +83,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     initializeAuth: async () => {
         try {
-            const [accessToken, userJson] = await Promise.all([
+            const [accessToken, userJson, savedAvatar] = await Promise.all([
                 getItem(STORAGE_KEYS.ACCESS_TOKEN),
                 getItem(STORAGE_KEYS.USER),
+                getItem(STORAGE_KEYS.AVATAR),
             ]);
 
             let user: UserResponse | null = null;
             if (userJson) {
                 try {
                     user = JSON.parse(userJson) as UserResponse;
+                    if (user && savedAvatar && !user.avatarUrl) {
+                        user.avatarUrl = savedAvatar;
+                    }
+                    if (user && !user.createdAt) {
+                        user.createdAt = new Date().toISOString();
+                        setItem(STORAGE_KEYS.USER, JSON.stringify(user)).catch(() => {});
+                    }
                 } catch {
                     // Ignore parse error
                 }
@@ -93,7 +110,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                         id: (payload.userId as string) || (payload.sub as string) || 'user',
                         fullName: (payload.fullName as string) || (payload.name as string) || (payload.sub as string) || '',
                         email: (payload.email as string) || (payload.sub as string) || '',
+                        avatarUrl: savedAvatar || null,
                         emailVerified: true,
+                        createdAt: (payload.createdAt as string) || (payload.iat ? new Date(payload.iat * 1000).toISOString() : new Date().toISOString()),
                     };
                     setItem(STORAGE_KEYS.USER, JSON.stringify(user)).catch(() => {});
                 }

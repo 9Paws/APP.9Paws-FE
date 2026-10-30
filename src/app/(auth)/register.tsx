@@ -9,69 +9,81 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslation } from 'react-i18next';
-import { Mail, Lock, User } from 'lucide-react-native';
-import type { AxiosError } from 'axios';
+import { Lock, Mail, User } from 'lucide-react-native';
+import { AxiosError } from 'axios';
 
 import { registerSchema, type RegisterFormData } from '@/lib/validators';
+import { useToastStore } from '@/stores/toast.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { authService } from '@/services/auth.service';
+import { googleAuthService } from '@/services/google-auth.service';
 import { setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
-import { useToastStore } from '@/stores/toast.store';
-import { Button } from '@/components/ui/Button';
+import { useResponsive } from '@/hooks/useResponsive';
 import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import { MiuMiuTip } from '@/components/ui/MiuMiuTip';
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
-type PasswordStrength = 'weak' | 'medium' | 'strong';
-
-function getPasswordStrength(password: string): PasswordStrength {
-  if (password.length < 8) return 'weak';
-  const hasLetter = /[A-Za-z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  const hasSpecial = /[^A-Za-z\d]/.test(password);
-  if (hasLetter && hasNumber && (hasSpecial || password.length >= 12)) return 'strong';
-  if (hasLetter && hasNumber) return 'medium';
-  return 'weak';
+interface PasswordStrengthProps {
+  password?: string;
 }
 
-function PasswordStrengthBar({ password }: { password: string }) {
-  const { t } = useTranslation();
-  if (!password) return null;
-  const strength = getPasswordStrength(password);
-
-  const strengthConfig: Record<
-    PasswordStrength,
-    { label: string; filledBars: number; barColor: string; labelColor: string }
-  > = {
-    weak: { label: t('auth.register.weak'), filledBars: 1, barColor: '#EF4444', labelColor: '#EF4444' },
-    medium: { label: t('auth.register.medium'), filledBars: 2, barColor: '#F97316', labelColor: '#F97316' },
-    strong: { label: t('auth.register.strong'), filledBars: 3, barColor: '#10B981', labelColor: '#10B981' },
+function PasswordStrengthBar({ password = '' }: PasswordStrengthProps) {
+  const getStrength = () => {
+    if (!password) return 0;
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return score;
   };
 
-  const config = strengthConfig[strength];
+  const strength = getStrength();
+
+  const getBarColor = (index: number) => {
+    if (index >= strength) return 'bg-gray-200';
+    if (strength <= 1) return 'bg-red-500';
+    if (strength <= 2) return 'bg-amber-400';
+    if (strength <= 3) return 'bg-yellow-400';
+    return 'bg-emerald-500';
+  };
+
+  const getLabel = () => {
+    if (!password) return '';
+    if (strength <= 1) return 'Yếu';
+    if (strength <= 2) return 'Trung bình';
+    if (strength <= 3) return 'Khá';
+    return 'Mạnh';
+  };
+
+  const getTextColor = () => {
+    if (strength <= 1) return 'text-red-500';
+    if (strength <= 2) return 'text-amber-500';
+    if (strength <= 3) return 'text-yellow-600';
+    return 'text-emerald-600';
+  };
+
+  if (!password) return null;
 
   return (
-    <View className="mt-2 gap-y-1">
-      <View className="flex-row gap-x-1.5">
-        {[0, 1, 2].map((index) => (
+    <View className="mt-1.5">
+      <View className="flex-row items-center gap-1.5">
+        {[0, 1, 2, 3].map((index) => (
           <View
             key={index}
-            style={{
-              flex: 1,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: index < config.filledBars ? config.barColor : '#E5E7EB',
-            }}
+            className={`h-1 flex-1 rounded-full ${getBarColor(index)}`}
           />
         ))}
       </View>
-      <Text style={{ fontSize: 11, fontWeight: '600', color: config.labelColor }}>
-        {config.label}
+      <Text className={`mt-1 text-right text-xs font-semibold ${getTextColor()}`}>
+        {getLabel()}
       </Text>
     </View>
   );
@@ -81,7 +93,11 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const showToast = useToastStore((state) => state.showToast);
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const { isSmallDevice, maxContentWidth } = useResponsive();
+
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const {
     control,
@@ -89,10 +105,15 @@ export default function RegisterScreen() {
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   });
 
-  const passwordValue = useWatch({ control, name: 'password', defaultValue: '' });
+  const passwordValue = useWatch({ control, name: 'password' });
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -121,40 +142,71 @@ export default function RegisterScreen() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const { idToken } = await googleAuthService.signIn();
+      const res = await authService.googleLogin({ idToken });
+      await setAuth(res.data);
+      showToast({ type: 'success', message: t('auth.login.loginSuccess') });
+      router.replace('/(tabs)' as any);
+    } catch (err: any) {
+      if (err?.message?.includes('GOOGLE_NATIVE_UNAVAILABLE')) {
+        showToast({
+          type: 'info',
+          title: 'Google Sign-In',
+          message: 'Google Sign-In đã sẵn sàng cho bản Development Build thiết bị thật.',
+        });
+        return;
+      }
+      const errorMsg = err?.response?.data?.message || err?.message;
+      showToast({
+        type: 'error',
+        title: t('common.error'),
+        message: errorMsg || 'Đăng nhập Google thất bại.',
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-background-warm font-sans"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 px-6 pt-12 pb-8">
+        <View
+          className="w-full self-center px-6 py-8 sm:py-12"
+          style={{ maxWidth: maxContentWidth }}
+        >
           {/* Mascot */}
-          <View className="mb-5 items-center">
-            <View className="h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+          <View className="mb-4 items-center sm:mb-5">
+            <View className="h-18 w-18 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-amber-100 border-2 border-amber-200/80 shadow-xs">
               <Image
                 source={MIU_MIU_IMAGE}
-                style={{ width: 48, height: 48 }}
+                style={{ width: isSmallDevice ? 46 : 54, height: isSmallDevice ? 46 : 54 }}
                 resizeMode="contain"
               />
             </View>
           </View>
 
           {/* Title */}
-          <View className="mb-7 items-center">
-            <Text className="text-2xl font-bold text-text-main font-bold">
+          <View className="mb-5 items-center sm:mb-7">
+            <Text className="text-2xl sm:text-3xl font-extrabold text-text-main text-center">
               {t('auth.register.title')}
             </Text>
-            <Text className="mt-2 text-center text-sm text-text-muted font-sans">
+            <Text className="mt-1.5 text-center text-xs sm:text-sm text-text-muted font-sans">
               {t('auth.register.subtitle')}
             </Text>
           </View>
 
           {/* Form */}
-          <View className="gap-y-4">
+          <View className="gap-y-3.5 sm:gap-y-4">
             <Controller
               control={control}
               name="fullName"
@@ -191,11 +243,11 @@ export default function RegisterScreen() {
               )}
             />
 
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <View>
+            <View>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
                   <Input
                     label={t('auth.register.passwordLabel')}
                     placeholder="••••••••"
@@ -206,10 +258,10 @@ export default function RegisterScreen() {
                     value={value}
                     error={errors.password?.message}
                   />
-                  <PasswordStrengthBar password={passwordValue} />
-                </View>
-              )}
-            />
+                )}
+              />
+              <PasswordStrengthBar password={passwordValue} />
+            </View>
 
             <Controller
               control={control}
@@ -230,12 +282,12 @@ export default function RegisterScreen() {
           </View>
 
           {/* MiuMiu Tip */}
-          <View className="mt-5">
+          <View className="mt-4 sm:mt-5">
             <MiuMiuTip content={t('auth.register.miumiuTip')} />
           </View>
 
           {/* Submit button */}
-          <View className="mt-6">
+          <View className="mt-5 sm:mt-6">
             <Button
               title={t('auth.register.submitButton')}
               onPress={() => handleSubmit(onSubmit)()}
@@ -244,7 +296,7 @@ export default function RegisterScreen() {
           </View>
 
           {/* Divider */}
-          <View className="my-5 flex-row items-center">
+          <View className="my-4 sm:my-5 flex-row items-center">
             <View className="h-px flex-1 bg-gray-200" />
             <Text className="mx-4 text-xs text-text-muted">{t('common.or')}</Text>
             <View className="h-px flex-1 bg-gray-200" />
@@ -255,22 +307,17 @@ export default function RegisterScreen() {
             title={t('auth.register.googleButton')}
             variant="outline"
             icon={<GoogleIcon size={20} />}
-            onPress={() => {
-              showToast({
-                type: 'info',
-                title: 'Google Sign-In',
-                message: t('auth.register.googleComingSoon'),
-              });
-            }}
+            isLoading={isGoogleLoading}
+            onPress={handleGoogleLogin}
           />
 
           {/* Footer */}
-          <View className="mt-6 flex-row items-center justify-center">
-            <Text className="text-sm text-text-muted font-sans">
+          <View className="mt-8 sm:mt-10 flex-row items-center justify-center pb-2">
+            <Text className="text-xs sm:text-sm text-text-muted font-sans">
               {t('auth.register.hasAccount')}
             </Text>
             <TouchableOpacity onPress={() => router.back()}>
-              <Text className="text-sm font-bold text-brand">
+              <Text className="text-xs sm:text-sm font-bold text-brand">
                 {t('auth.register.loginNow')}
               </Text>
             </TouchableOpacity>
