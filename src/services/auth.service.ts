@@ -3,6 +3,7 @@ import type {
     AuthResponse,
     ChangePasswordRequest,
     ForgotPasswordRequest,
+    GoogleLoginRequest,
     LoginRequest,
     RefreshTokenRequest,
     RegisterRequest,
@@ -15,7 +16,7 @@ import type {
 } from '@/types';
 
 const authService = {
-    // 1. Đăng nhập
+    // 1. Đăng nhập bằng Email & Mật khẩu
     login: async (payload: LoginRequest) => {
         const response = await api.post<SingleResponse<AuthResponse>>('/auth/login', payload);
         return response.data;
@@ -90,14 +91,11 @@ const authService = {
         return response.data;
     },
 
-    // 12. Cập nhật trạng thái liên kết Google (isGoogleLinked)
-    toggleGoogleLink: async (isGoogleLinked: boolean) => {
-        const response = await api.patch<SingleResponse<{ isGoogleLinked: boolean }>>(
-            '/auth/google-link',
-            { isGoogleLinked }
-        );
+    // 12. Đăng nhập bằng Google ID Token
+    googleLogin: async (payload: GoogleLoginRequest) => {
+        const response = await api.post<SingleResponse<AuthResponse>>('/auth/google', payload);
         return response.data;
     },
-}
+};
 
 export { authService };

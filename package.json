@@ -6,6 +6,7 @@
     "@expo-google-fonts/be-vietnam-pro": "^0.4.1",
     "@expo/ui": "~58.0.21",
     "@hookform/resolvers": "^6.0.0",
+    "@react-native-google-signin/google-signin": "^16.2.0",
     "@stomp/stompjs": "^7.5.0",
     "@tanstack/react-query": "^5.104.5",
     "axios": "^1.20.0",
