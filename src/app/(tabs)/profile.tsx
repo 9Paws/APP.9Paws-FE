@@ -25,7 +25,7 @@ import {
   Coins,
   CreditCard,
   Fingerprint,
-  Globe,
+
   Heart,
   HelpCircle,
   LogOut,
@@ -46,7 +46,7 @@ import { userService } from '@/services/user.service';
 import { googleAuthService } from '@/services/google-auth.service';
 import { getItem, setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
-import { changeLanguage, SupportedLanguage } from '@/i18n';
+
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
@@ -135,14 +135,14 @@ const CURRENCIES: CurrencyOption[] = [
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, logout, updateUser } = useAuthStore();
   const showToast = useToastStore((state) => state.showToast);
 
-  const supportedLangs: SupportedLanguage[] = ['vi', 'en', 'zh', 'ko', 'ja'];
-  const currentLang = supportedLangs.includes(i18n.language as SupportedLanguage)
-    ? (i18n.language as SupportedLanguage)
-    : 'en';
+
+
+
+
 
   const [wallets, setWallets] = useState<WalletItem[]>([]);
 
@@ -153,7 +153,7 @@ export default function ProfileScreen() {
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderTime, setReminderTime] = useState('21:00');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isLangModalVisible, setIsLangModalVisible] = useState(false);
+
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [isAddWalletModalVisible, setIsAddWalletModalVisible] = useState(false);
   const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
@@ -503,38 +503,8 @@ export default function ProfileScreen() {
       });
     }, 400);
   };
-
-  const getLanguageDisplayName = (lang: string) => {
-    switch (lang) {
-      case 'vi':
-        return 'Tiếng Việt';
-      case 'en':
-        return 'English';
-      case 'zh':
-        return '中文';
-      case 'ko':
-        return '한국어';
-      case 'ja':
-        return '日本語';
-      default:
-        return 'English';
-    }
-  };
-
   const activeCurrencyObj =
     CURRENCIES.find((c) => c.code === currentCurrency) || CURRENCIES[0];
-
-  const handleSelectLanguage = async (lang: SupportedLanguage) => {
-    await changeLanguage(lang);
-    setIsLangModalVisible(false);
-
-    showToast({
-      type: 'success',
-      title: t('profile.langChangedTitle'),
-      message: t('profile.langChangedMessage'),
-    });
-  };
-
   const handleLogout = () => {
     setIsLogoutModalVisible(true);
   };
@@ -823,23 +793,6 @@ export default function ProfileScreen() {
               }
               onPress={() => setIsCurrencyModalVisible(true)}
             />
-            <View className="h-px bg-gray-100 my-1" />
-
-            <SettingRow
-              icon={<Globe size={20} color="#06B6D4" />}
-              iconBgColor="bg-cyan-50"
-              title={t('profile.language')}
-              subtitle={t('profile.languageSub')}
-              rightElement={
-                <View className="flex-row items-center">
-                  <Text className="text-xs font-semibold text-text-muted mr-1.5 font-sans">
-                    {getLanguageDisplayName(currentLang)}
-                  </Text>
-                  <ChevronRight size={16} color="#9CA3AF" />
-                </View>
-              }
-              onPress={() => setIsLangModalVisible(true)}
-            />
           </View>
         </View>
 
@@ -885,125 +838,6 @@ export default function ProfileScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-
-      {/* Modal Chọn Ngôn ngữ (Language Switcher Sheet) */}
-      <Modal
-        visible={isLangModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsLangModalVisible(false)}
-      >
-        <View className="flex-1 justify-end bg-black/40">
-          <TouchableOpacity
-            className="flex-1"
-            activeOpacity={1}
-            onPress={() => setIsLangModalVisible(false)}
-          />
-          <View className="bg-white rounded-t-3xl px-6 pt-5 pb-8 shadow-2xl">
-            <View className="flex-row items-center justify-between pb-4 border-b border-gray-100">
-              <Text className="text-lg font-bold text-text-main">
-                {t('profile.selectLanguage')}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setIsLangModalVisible(false)}
-                className="p-1"
-              >
-                <X size={20} color="#6B7280" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Tiếng Việt */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleSelectLanguage('vi')}
-              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
-                currentLang === 'vi' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
-              }`}
-            >
-              <View className="flex-row items-center">
-                <Text className="text-2xl mr-3">🇻🇳</Text>
-                <View>
-                  <Text className="text-sm font-bold text-text-main">Tiếng Việt</Text>
-                  <Text className="text-xs text-text-muted font-sans">Việt Nam</Text>
-                </View>
-              </View>
-              {currentLang === 'vi' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
-            </TouchableOpacity>
-
-            {/* English */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleSelectLanguage('en')}
-              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
-                currentLang === 'en' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
-              }`}
-            >
-              <View className="flex-row items-center">
-                <Text className="text-2xl mr-3">🇬🇧</Text>
-                <View>
-                  <Text className="text-sm font-bold text-text-main">English</Text>
-                  <Text className="text-xs text-text-muted font-sans">Global / US</Text>
-                </View>
-              </View>
-              {currentLang === 'en' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
-            </TouchableOpacity>
-
-            {/* 中文 */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleSelectLanguage('zh')}
-              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
-                currentLang === 'zh' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
-              }`}
-            >
-              <View className="flex-row items-center">
-                <Text className="text-2xl mr-3">🇨🇳</Text>
-                <View>
-                  <Text className="text-sm font-bold text-text-main">中文</Text>
-                  <Text className="text-xs text-text-muted font-sans">简体中文 (China)</Text>
-                </View>
-              </View>
-              {currentLang === 'zh' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
-            </TouchableOpacity>
-
-            {/* 한국어 */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleSelectLanguage('ko')}
-              className={`flex-row items-center justify-between py-3.5 border-b border-gray-50 ${
-                currentLang === 'ko' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
-              }`}
-            >
-              <View className="flex-row items-center">
-                <Text className="text-2xl mr-3">🇰🇷</Text>
-                <View>
-                  <Text className="text-sm font-bold text-text-main">한국어</Text>
-                  <Text className="text-xs text-text-muted font-sans">대한민국 (Korea)</Text>
-                </View>
-              </View>
-              {currentLang === 'ko' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
-            </TouchableOpacity>
-
-            {/* 日本語 */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleSelectLanguage('ja')}
-              className={`flex-row items-center justify-between py-3.5 ${
-                currentLang === 'ja' ? 'bg-orange-50/50 rounded-xl px-3' : 'px-3'
-              }`}
-            >
-              <View className="flex-row items-center">
-                <Text className="text-2xl mr-3">🇯🇵</Text>
-                <View>
-                  <Text className="text-sm font-bold text-text-main">日本語</Text>
-                  <Text className="text-xs text-text-muted font-sans">日本 (Japan)</Text>
-                </View>
-              </View>
-              {currentLang === 'ja' && <Check size={20} color="#F15C22" strokeWidth={2.5} />}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {/* Modal Xác nhận Đăng xuất */}
       <Modal
