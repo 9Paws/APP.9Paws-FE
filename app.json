@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ninepaws.app"
+      "bundleIdentifier": "com.ninepaws.app",
+      "infoPlist": {}
     },
     "android": {
       "adaptiveIcon": {
@@ -35,11 +36,24 @@
       ],
       "expo-secure-store",
       "expo-localization",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "81e5011f-e89f-45ed-bda0-5ee29a7f7876"
+      }
     }
   }
 }
