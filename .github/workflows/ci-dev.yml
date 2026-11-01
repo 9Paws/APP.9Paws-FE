@@ -31,4 +31,4 @@ jobs:
               run: npx tsc --noEmit
 
             - name: Check Expo Doctor
-              run: npx expo-doctor --non-interactive
+              run: npx expo-doctor
