@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thông Báo Phát Hành Bản Build Staging</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333333;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+        style="background-color: #f4f6f8; padding: 30px 15px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%"
+                    style="max-width: 620px; background-color: #ffffff; border-radius: 10px; border: 1px solid #e1e4e8; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+
+                    <!-- Header Banner -->
+                    <tr>
+                        <td style="background-color: #2b3a4a; padding: 24px 30px; text-align: left;">
+                            <h1
+                                style="margin: 0; font-size: 20px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px;">
+                                🐾 9Paws Mobile — Bản Thử Nghiệm Staging</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Main Body -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <p style="font-size: 15px; line-height: 1.6; margin-top: 0; color: #2d3748;">
+                                Kính gửi <b>Đội ngũ Kiểm thử (QA / QC Team)</b>,
+                            </p>
+                            <p style="font-size: 15px; line-height: 1.6; color: #4a5568;">
+                                Hệ thống CI/CD tự động xin trân trọng thông báo phiên bản cập nhật thử nghiệm mới của
+                                ứng dụng di động <b>9Paws</b> đã được biên dịch thành công từ nhánh <b>main</b>.
+                            </p>
+
+                            <!-- PR Title Card -->
+                            <div
+                                style="background-color: #f7fafc; border-left: 4px solid #3182ce; padding: 14px 18px; margin: 20px 0 16px 0; border-radius: 4px;">
+                                <span
+                                    style="font-size: 11px; font-weight: 700; color: #718096; text-transform: uppercase; letter-spacing: 0.8px;">Mục
+                                    tiêu cập nhật:</span>
+                                <h3 style="margin: 6px 0 0 0; font-size: 16px; color: #2b6cb0; font-weight: 600;">
+                                    {{PR_TITLE}}</h3>
+                            </div>
+
+                            <!-- PR Description Content -->
+                            <div
+                                style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px; background-color: #ffffff; margin-bottom: 24px;">
+                                <h4
+                                    style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #4a5568; text-transform: uppercase;">
+                                    Chi tiết thay đổi & Nội dung kiểm thử:</h4>
+                                <div
+                                    style="font-size: 14px; line-height: 1.6; color: #4a5568; white-space: pre-wrap; font-family: inherit;">
+                                    {{PR_BODY}}</div>
+                            </div>
+
+                            <!-- Attachment Notice -->
+                            <div
+                                style="background-color: #edf2f7; padding: 14px 18px; border-radius: 6px; margin-bottom: 24px;">
+                                <p style="margin: 0; font-size: 14px; color: #2d3748; line-height: 1.5;">
+                                    📎 <b>Tệp cài đặt:</b> File <code>9Paws-Staging.apk</code> đã được <b>đính kèm trực
+                                        tiếp trong email này</b> để Quý anh/chị tải về và cài đặt trực tiếp lên thiết bị
+                                    Android.
+                                </p>
+                            </div>
+
+                            <!-- Fallback Download Button -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center">
+                                        <p style="font-size: 12px; color: #a0aec0; margin-bottom: 8px;">(Liên kết dự
+                                            phòng trường hợp hộp thư chặn tệp đính kèm lớn)</p>
+                                        <a href="https://github.com/{{REPOSITORY}}/actions/runs/{{RUN_ID}}"
+                                            style="display: inline-block; background-color: #3182ce; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px;">Tải
+                                            Bản Build Trên GitHub Actions</a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Footer Note -->
+                            <div
+                                style="margin-top: 35px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #718096; line-height: 1.6;">
+                                Mọi phản hồi về lỗi giao diện hoặc tính năng, xin vui lòng tạo Issue trên GitHub hoặc
+                                phản hồi trực tiếp cho đội ngũ phát triển.<br><br>
+                                Trân trọng,<br>
+                                <b>9Paws Engineering Team</b>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

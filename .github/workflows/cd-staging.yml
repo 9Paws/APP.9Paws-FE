@@ -1,0 +1,142 @@
+name: CD Staging - Build Lightweight APK & Notify Testers (main)
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    verify-quality:
+        name: Verify Code Quality
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "npm"
+            - run: npm ci
+            - run: npm run lint
+            - run: npx tsc --noEmit
+
+    build-staging-apk:
+        name: Build Lightweight APK (arm64-v8a)
+        needs: verify-quality
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Kéo toàn bộ lịch sử commit để đọc thông tin PR
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "npm"
+
+            - name: Set up Java JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  distribution: "temurin"
+                  java-version: "17"
+
+            - name: Set up Gradle Cache
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.gradle/caches
+                      ~/.gradle/wrapper
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  restore-keys: |
+                      ${{ runner.os }}-gradle-
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Generate Android Native Project
+              run: npx expo prebuild --platform android --clean
+
+            - name: Restore Keystore from Secrets
+              run: |
+                  echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore
+
+            - name: Configure Gradle Signing & ABI Filter
+              env:
+                  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+                  KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+                  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+              run: python3 .github/scripts/configure-staging-gradle.py
+
+            - name: Build APK via Gradle
+              run: |
+                  cd android
+                  chmod +x gradlew
+                  ./gradlew assembleRelease --no-daemon
+
+            - name: Check APK Size
+              run: |
+                  APK_FILE=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+                  cp $APK_FILE ./9Paws-Staging.apk
+                  ls -lh 9Paws-Staging.apk
+
+            - name: Upload APK Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: 9Paws-Staging-APK
+                  path: ./9Paws-Staging.apk
+                  retention-days: 14
+
+            # ------------------------------------------------------------------------
+            # LẤY TITLE & DESCRIPTION CỦA PR VỪA MERGE VÀO MAIN
+            # ------------------------------------------------------------------------
+            - name: Fetch PR Details & Prepare Email
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  # Dùng GitHub CLI tra cứu PR tương ứng với commit vừa merge
+                  PR_DATA=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0] // empty')
+
+                  if [ -n "$PR_DATA" ]; then
+                    PR_TITLE=$(echo "$PR_DATA" | jq -r '.title')
+                    PR_BODY=$(echo "$PR_DATA" | jq -r '.body // "Không có mô tả chi tiết."')
+                  else
+                    PR_TITLE="${{ github.event.head_commit.message }}"
+                    PR_BODY="Cập nhật trực tiếp từ nhánh main."
+                  fi
+
+                  echo "PR Title: $PR_TITLE"
+
+                  # Dùng Python xử lý template an toàn, không sợ lỗi ký tự đặc biệt
+                  python3 -c "
+                  import os
+
+                  with open('.github/email-templates/staging-email.html', 'r', encoding='utf-8') as f:
+                      html = f.read()
+
+                  pr_title = '''$PR_TITLE'''.replace('\\', '\\\\')
+                  pr_body = '''$PR_BODY'''.replace('\\', '\\\\')
+
+                  html = html.replace('{{PR_TITLE}}', pr_title)
+                  html = html.replace('{{PR_BODY}}', pr_body)
+                  html = html.replace('{{REPOSITORY}}', '${{ github.repository }}')
+                  html = html.replace('{{RUN_ID}}', '${{ github.run_id }}')
+
+                  with open('email-ready.html', 'w', encoding='utf-8') as f:
+                      f.write(html)
+                  "
+
+            # ------------------------------------------------------------------------
+            # GỬI EMAIL KÈM TRỰC TIẾP TỆP ĐÍNH KÈM .APK CHO TESTERS
+            # ------------------------------------------------------------------------
+            - name: Send Email with APK Attachment to Testers
+              uses: dawidd6/action-send-mail@v3
+              with:
+                  server_address: smtp.gmail.com
+                  server_port: 465
+                  secure: true
+                  username: ${{ secrets.MAIL_USERNAME }}
+                  password: ${{ secrets.MAIL_PASSWORD }}
+                  subject: "🐾 [9Paws Staging] Phiên bản thử nghiệm mới sẵn sàng"
+                  to: ${{ secrets.TESTER_EMAILS }}
+                  from: "9Paws CI/CD <${{ secrets.MAIL_USERNAME }}>"
+                  html_body: file://email-ready.html
+                  attachments: ./9Paws-Staging.apk # Đính kèm trực tiếp file APK vào thư!
