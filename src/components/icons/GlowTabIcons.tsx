@@ -17,32 +17,33 @@ export interface GlowIconProps {
 }
 
 // =============================================================================
-// 1. TỔNG QUAN (OVERVIEW) - Magic Crystal Dashboard
-// 4 viên ngọc bo tròn gradient đa sắc lung linh, phản chiếu ánh sáng hoàng gia
+// 1. TỔNG QUAN (OVERVIEW) - Magic Crystal Home Vault
+// Biểu tượng ngôi nhà tài chính ma thuật, bo tròn mượt mà, gradient cam hoàng kim
 // =============================================================================
-export function GlowOverviewIcon({ focused, size = 26 }: GlowIconProps) {
+export function GlowOverviewIcon({ focused, size = 30 }: GlowIconProps) {
   const s = size;
   return (
-    <View style={styles.iconContainer}>
-      <Svg width={s} height={s} viewBox="0 0 28 28">
+    <View style={[styles.iconWrapper, focused && styles.activePill]}>
+      <Svg width={s} height={s} viewBox="0 0 32 32">
         <Defs>
-          <LinearGradient id="ovGradOrange" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#FF9E2C" />
-            <Stop offset="100%" stopColor="#F15C22" />
+          {/* Active Gradient: Rực rỡ hoàng kim */}
+          <LinearGradient id="homeGradActive" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#FFA726" />
+            <Stop offset="55%" stopColor="#F15C22" />
+            <Stop offset="100%" stopColor="#D82246" />
           </LinearGradient>
-          <LinearGradient id="ovGradRose" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#FB7185" />
-            <Stop offset="100%" stopColor="#E11D48" />
+          {/* Inner Door Gradient */}
+          <LinearGradient id="homeDoorGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0%" stopColor="#FFF7ED" />
+            <Stop offset="100%" stopColor="#FED7AA" />
           </LinearGradient>
-          <LinearGradient id="ovGradCyan" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#38BDF8" />
-            <Stop offset="100%" stopColor="#0284C7" />
+          {/* Specular White Shine */}
+          <LinearGradient id="homeShine" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6" />
+            <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.05" />
           </LinearGradient>
-          <LinearGradient id="ovGradGold" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#FCD34D" />
-            <Stop offset="100%" stopColor="#D97706" />
-          </LinearGradient>
-          <LinearGradient id="ovInactive" x1="0" y1="0" x2="1" y2="1">
+          {/* Inactive Gradient */}
+          <LinearGradient id="homeGradInactive" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#CBD5E1" />
             <Stop offset="100%" stopColor="#94A3B8" />
           </LinearGradient>
@@ -50,34 +51,47 @@ export function GlowOverviewIcon({ focused, size = 26 }: GlowIconProps) {
 
         {focused ? (
           <G>
-            {/* Top Left: Warm Orange Gem */}
-            <Rect x="2.5" y="2.5" width="10" height="10" rx="3.5" fill="url(#ovGradOrange)" />
-            <Circle cx="5.5" cy="5.5" r="1.5" fill="#FFFFFF" opacity="0.65" />
-
-            {/* Top Right: Rose Jewel */}
-            <Rect x="15.5" y="2.5" width="10" height="10" rx="3.5" fill="url(#ovGradRose)" />
-            <Circle cx="18.5" cy="5.5" r="1.5" fill="#FFFFFF" opacity="0.65" />
-
-            {/* Bottom Left: Azure Sapphire */}
-            <Rect x="2.5" y="15.5" width="10" height="10" rx="3.5" fill="url(#ovGradCyan)" />
-            <Circle cx="5.5" cy="18.5" r="1.5" fill="#FFFFFF" opacity="0.65" />
-
-            {/* Bottom Right: Golden Amber */}
-            <Rect x="15.5" y="15.5" width="10" height="10" rx="3.5" fill="url(#ovGradGold)" />
-            <Circle cx="18.5" cy="18.5" r="1.5" fill="#FFFFFF" opacity="0.65" />
-
-            {/* Center Magic Sparkle */}
+            {/* Soft Ambient Shadow behind */}
             <Path
-              d="M14 11.5L14.7 13.3L16.5 14L14.7 14.7L14 16.5L13.3 14.7L11.5 14L13.3 13.3Z"
-              fill="#FFFFFF"
+              d="M16 2.8L4.5 12.2C3.5 13 3 14.3 3 15.6V24C3 27 5.5 29.5 8.5 29.5H23.5C26.5 29.5 29 27 29 24V15.6C29 14.3 28.5 13 27.5 12.2L16 2.8Z"
+              fill="#F15C22"
+              opacity="0.2"
+              transform="translate(0, 1.5)"
             />
+
+            {/* Main Solid Home Vault Silhouette */}
+            <Path
+              d="M16 2.8L4.5 12.2C3.5 13 3 14.3 3 15.6V24C3 27 5.5 29.5 8.5 29.5H23.5C26.5 29.5 29 27 29 24V15.6C29 14.3 28.5 13 27.5 12.2L16 2.8Z"
+              fill="url(#homeGradActive)"
+            />
+
+            {/* Upper Roof Glossy Highlight */}
+            <Path
+              d="M16 4.5L5.5 13.2C5.2 13.5 5 13.9 5 14.3V16.5C8 14 12 12.5 16 12.5C20 12.5 24 14 27 16.5V14.3C27 13.9 26.8 13.5 26.5 13.2L16 4.5Z"
+              fill="url(#homeShine)"
+            />
+
+            {/* Interior Arch / Magic Vault Door */}
+            <Path
+              d="M12 29.5V20.5C12 18.3 13.8 16.5 16 16.5C18.2 16.5 20 18.3 20 20.5V29.5H12Z"
+              fill="url(#homeDoorGrad)"
+            />
+
+            {/* Golden Star Sparkle inside Arch */}
+            <Path
+              d="M16 19L16.6 20.8L18.4 21.4L16.6 22L16 23.8L15.4 22L13.6 21.4L15.4 20.8Z"
+              fill="#F59E0B"
+            />
+            <Circle cx="16" cy="21.4" r="0.8" fill="#FFFFFF" />
           </G>
         ) : (
-          <G fill="url(#ovInactive)">
-            <Rect x="3" y="3" width="9.5" height="9.5" rx="3" opacity="0.85" />
-            <Rect x="15.5" y="3" width="9.5" height="9.5" rx="3" opacity="0.65" />
-            <Rect x="3" y="15.5" width="9.5" height="9.5" rx="3" opacity="0.65" />
-            <Rect x="15.5" y="15.5" width="9.5" height="9.5" rx="3" opacity="0.85" />
+          <G fill="url(#homeGradInactive)">
+            <Path d="M16 3.5L4.8 12.8C4 13.5 3.5 14.5 3.5 15.6V24C3.5 26.8 5.7 29 8.5 29H23.5C26.3 29 28.5 26.8 28.5 24V15.6C28.5 14.5 28 13.5 27.2 12.8L16 3.5Z" />
+            <Path
+              d="M12.5 29V21.5C12.5 19.6 14.1 18 16 18C17.9 18 19.5 19.6 19.5 21.5V29H12.5Z"
+              fill="#FFFFFF"
+              opacity="0.85"
+            />
           </G>
         )}
       </Svg>
@@ -86,25 +100,34 @@ export function GlowOverviewIcon({ focused, size = 26 }: GlowIconProps) {
 }
 
 // =============================================================================
-// 2. LỊCH SỬ / CHI TIÊU (EXPENSE / HISTORY) - Emerald Ledger & Golden Coin
-// Sổ tay chi tiêu ngọc lục bảo lung linh kết hợp đồng xu vàng óng ánh
+// 2. LỊCH SỬ / CHI TIÊU (EXPENSE / HISTORY) - Emerald Vault & Gold Coin
+// Chiếc ví da ngọc lục bảo đầy đặn với đồng xu vàng may mắn nhô lên tỏa sáng
 // =============================================================================
-export function GlowExpenseIcon({ focused, size = 26 }: GlowIconProps) {
+export function GlowExpenseIcon({ focused, size = 30 }: GlowIconProps) {
   const s = size;
   return (
-    <View style={styles.iconContainer}>
-      <Svg width={s} height={s} viewBox="0 0 28 28">
+    <View style={[styles.iconWrapper, focused && styles.activePill]}>
+      <Svg width={s} height={s} viewBox="0 0 32 32">
         <Defs>
-          <LinearGradient id="expEmerald" x1="0" y1="0" x2="1" y2="1">
+          {/* Emerald Gradient */}
+          <LinearGradient id="walGradActive" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#34D399" />
             <Stop offset="50%" stopColor="#10B981" />
             <Stop offset="100%" stopColor="#047857" />
           </LinearGradient>
-          <LinearGradient id="expGoldCoin" x1="0" y1="0" x2="1" y2="1">
+          {/* Gold Coin Gradient */}
+          <LinearGradient id="coinGradActive" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#FDE047" />
-            <Stop offset="100%" stopColor="#EAB308" />
+            <Stop offset="50%" stopColor="#F59E0B" />
+            <Stop offset="100%" stopColor="#D97706" />
           </LinearGradient>
-          <LinearGradient id="expInactive" x1="0" y1="0" x2="1" y2="1">
+          {/* Flap Highlight */}
+          <LinearGradient id="walShine" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.45" />
+            <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.05" />
+          </LinearGradient>
+          {/* Inactive */}
+          <LinearGradient id="walGradInactive" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#CBD5E1" />
             <Stop offset="100%" stopColor="#94A3B8" />
           </LinearGradient>
@@ -112,113 +135,49 @@ export function GlowExpenseIcon({ focused, size = 26 }: GlowIconProps) {
 
         {focused ? (
           <G>
-            {/* Emerald Ledger Book Cover */}
+            {/* Rising Golden Coin from Wallet Top Slot */}
+            <Circle cx="16" cy="9.5" r="7" fill="url(#coinGradActive)" />
+            <Circle cx="16" cy="9.5" r="5.6" stroke="#FEF08A" strokeWidth="0.8" fill="none" opacity="0.7" />
+            {/* Coin Star Inscription */}
             <Path
-              d="M4 6C4 4.34 5.34 3 7 3H20.5C21.88 3 23 4.12 23 5.5V21C23 22.1 22.1 23 21 23H7C5.34 23 4 21.66 4 20V6Z"
-              fill="url(#expEmerald)"
+              d="M16 6.8L16.7 8.3L18.2 8.7L17 9.8L17.4 11.3L16 10.5L14.6 11.3L15 9.8L13.8 8.7L15.3 8.3Z"
+              fill="#FFFFFF"
             />
-            {/* Book Spine Highlight */}
+            <Circle cx="14.2" cy="7.8" r="0.9" fill="#FFFFFF" opacity="0.8" />
+
+            {/* Main Rounded Wallet Body */}
+            <Rect x="2.5" y="11" width="27" height="17" rx="5" fill="url(#walGradActive)" />
+
+            {/* Upper Flap Curved Shadow */}
             <Path
-              d="M7 3C5.34 3 4 4.34 4 6V20C4 21.66 5.34 23 7 23C7.5 23 8 22.5 8 22V4C8 3.5 7.5 3 7 3Z"
+              d="M2.5 16C2.5 13.2 4.7 11 7.5 11H24.5C27.3 11 29.5 13.2 29.5 16V17C23 15 9 15 2.5 17V16Z"
+              fill="url(#walShine)"
+            />
+
+            {/* Wallet Clasp / Badge on Right Side */}
+            <Path
+              d="M20 16.5H27C28.4 16.5 29.5 17.6 29.5 19C29.5 20.4 28.4 21.5 27 21.5H20C18.6 21.5 17.5 20.4 17.5 19C17.5 17.6 18.6 16.5 20 16.5Z"
               fill="#064E3B"
-              opacity="0.4"
+              opacity="0.35"
             />
-            {/* Ledger Line Marks */}
-            <Rect x="10" y="7.5" width="7" height="2" rx="1" fill="#A7F3D0" opacity="0.9" />
-            <Rect x="10" y="11.5" width="5" height="2" rx="1" fill="#A7F3D0" opacity="0.75" />
+            <Circle cx="21" cy="19" r="2.4" fill="url(#coinGradActive)" />
+            <Circle cx="20.6" cy="18.6" r="0.7" fill="#FFFFFF" />
 
-            {/* Glowing Golden Coin in Foreground */}
-            <Circle cx="18" cy="17" r="5.5" fill="url(#expGoldCoin)" />
-            <Circle cx="18" cy="17" r="4.2" stroke="#CA8A04" strokeWidth="1" fill="none" opacity="0.6" />
-            <Circle cx="16.5" cy="15.5" r="1.2" fill="#FFFFFF" opacity="0.8" />
-            {/* Mini Trend Arrow on Coin */}
+            {/* Decorative Card Stitching Line */}
             <Path
-              d="M16 18.5L18 15.5L20 18.5"
-              stroke="#854D0E"
-              strokeWidth="1.2"
+              d="M5.5 24H16"
+              stroke="#A7F3D0"
+              strokeWidth="1.5"
               strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </G>
-        ) : (
-          <G fill="url(#expInactive)">
-            <Path
-              d="M5 6C5 4.34 6.34 3 8 3H21C22.1 3 23 3.9 23 5V21C23 22.1 22.1 23 21 23H8C6.34 23 5 21.66 5 20V6Z"
-              opacity="0.75"
-            />
-            <Path
-              d="M8 3C6.34 3 5 4.34 5 6V20C5 21.66 6.34 23 8 23H9V3H8Z"
-              fill="#64748B"
-              opacity="0.5"
-            />
-            <Circle cx="17.5" cy="16.5" r="4" fill="#94A3B8" />
-          </G>
-        )}
-      </Svg>
-    </View>
-  );
-}
-
-// =============================================================================
-// 3. CHIA BILL NHÓM (SPLIT BILL) - Connected Hearts & Team Ribbon
-// Biểu tượng gắn kết bạn bè, minh bạch hóa đơn với gradient tím & xanh dương hoàng gia
-// =============================================================================
-export function GlowSplitIcon({ focused, size = 26 }: GlowIconProps) {
-  const s = size;
-  return (
-    <View style={styles.iconContainer}>
-      <Svg width={s} height={s} viewBox="0 0 28 28">
-        <Defs>
-          <LinearGradient id="splitGradPurple" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#A855F7" />
-            <Stop offset="100%" stopColor="#6366F1" />
-          </LinearGradient>
-          <LinearGradient id="splitGradBlue" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#60A5FA" />
-            <Stop offset="100%" stopColor="#3B82F6" />
-          </LinearGradient>
-          <LinearGradient id="splitInactive" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#CBD5E1" />
-            <Stop offset="100%" stopColor="#94A3B8" />
-          </LinearGradient>
-        </Defs>
-
-        {focused ? (
-          <G>
-            {/* Left Member Orb */}
-            <Circle cx="9" cy="8.5" r="4.5" fill="url(#splitGradPurple)" />
-            <Circle cx="7.7" cy="7.2" r="1.3" fill="#FFFFFF" opacity="0.7" />
-            <Path
-              d="M3 21.5C3 17.5 6 15 9.5 15C13 15 16 17.5 16 21.5"
-              fill="url(#splitGradPurple)"
-              opacity="0.9"
-            />
-
-            {/* Right Member Orb (Overlapping harmoniously) */}
-            <Circle cx="19" cy="8.5" r="4.5" fill="url(#splitGradBlue)" />
-            <Circle cx="17.7" cy="7.2" r="1.3" fill="#FFFFFF" opacity="0.7" />
-            <Path
-              d="M12.5 21.5C12.5 17.5 15.5 15 19 15C22.5 15 25 17.5 25 21.5"
-              fill="url(#splitGradBlue)"
+              strokeDasharray="2 2"
               opacity="0.8"
             />
-
-            {/* Center Synergy Sparkle / Magic Split Coin */}
-            <Circle cx="14" cy="14" r="3.2" fill="#FBBF24" />
-            <Path
-              d="M14 11.8V16.2M11.8 14H16.2"
-              stroke="#78350F"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-            />
-            <Circle cx="13.2" cy="13.2" r="0.8" fill="#FFFFFF" />
           </G>
         ) : (
-          <G fill="url(#splitInactive)">
-            <Circle cx="9.5" cy="9" r="4" opacity="0.85" />
-            <Path d="M4 21C4 17.8 6.5 15.5 9.5 15.5C12.5 15.5 15 17.8 15 21" opacity="0.85" />
-            <Circle cx="18.5" cy="9" r="3.5" opacity="0.65" />
-            <Path d="M13.5 21C13.5 18.2 16 16 18.5 16C21.5 16 24 18.2 24 21" opacity="0.65" />
+          <G fill="url(#walGradInactive)">
+            <Circle cx="16" cy="10" r="6" opacity="0.8" />
+            <Rect x="3" y="11.5" width="26" height="16.5" rx="4.5" />
+            <Circle cx="22" cy="19.5" r="2" fill="#FFFFFF" opacity="0.8" />
           </G>
         )}
       </Svg>
@@ -227,29 +186,107 @@ export function GlowSplitIcon({ focused, size = 26 }: GlowIconProps) {
 }
 
 // =============================================================================
-// 4. CÁ NHÂN (PROFILE) - Miu Miu Guardian & Crown
-// Linh vật Miu Miu tài lộc ấm áp với đôi tai vểnh và chiếc chuông vàng may mắn
+// 3. CHIA BILL NHÓM (SPLIT BILL) - Dynamic Connected Infinity Friends
+// Hai nhân vật kết nối mượt mà, gradient Tím Hoàng Gia & Xanh Electric lung linh
 // =============================================================================
-export function GlowProfileIcon({ focused, size = 26 }: GlowIconProps) {
+export function GlowSplitIcon({ focused, size = 30 }: GlowIconProps) {
   const s = size;
   return (
-    <View style={styles.iconContainer}>
-      <Svg width={s} height={s} viewBox="0 0 28 28">
+    <View style={[styles.iconWrapper, focused && styles.activePill]}>
+      <Svg width={s} height={s} viewBox="0 0 32 32">
         <Defs>
-          <LinearGradient id="profGradPeach" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor="#FFA07A" />
+          {/* Violet Gradient for Left Friend */}
+          <LinearGradient id="splitViolet" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#C084FC" />
+            <Stop offset="50%" stopColor="#9333EA" />
+            <Stop offset="100%" stopColor="#6B21A8" />
+          </LinearGradient>
+          {/* Blue Gradient for Right Friend */}
+          <LinearGradient id="splitElectric" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#60A5FA" />
+            <Stop offset="50%" stopColor="#3B82F6" />
+            <Stop offset="100%" stopColor="#1D4ED8" />
+          </LinearGradient>
+          {/* Golden Badge Gradient */}
+          <LinearGradient id="splitBadgeGrad" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#FDE047" />
+            <Stop offset="100%" stopColor="#F59E0B" />
+          </LinearGradient>
+          {/* Inactive */}
+          <LinearGradient id="splitInactiveGrad" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#CBD5E1" />
+            <Stop offset="100%" stopColor="#94A3B8" />
+          </LinearGradient>
+        </Defs>
+
+        {focused ? (
+          <G>
+            {/* Left Member (Violet) */}
+            <Circle cx="10" cy="9" r="5" fill="url(#splitViolet)" />
+            <Circle cx="8.5" cy="7.5" r="1.5" fill="#FFFFFF" opacity="0.65" />
+            <Path
+              d="M3 26C3 20.8 6.5 17 11 17C13 17 14.8 17.8 16.2 19.1C14.8 20.9 14 23.3 14 26H3Z"
+              fill="url(#splitViolet)"
+            />
+
+            {/* Right Member (Electric Blue - Overlapping gracefully) */}
+            <Circle cx="22" cy="9" r="5" fill="url(#splitElectric)" />
+            <Circle cx="20.5" cy="7.5" r="1.5" fill="#FFFFFF" opacity="0.65" />
+            <Path
+              d="M29 26C29 20.8 25.5 17 21 17C19 17 17.2 17.8 15.8 19.1C17.2 20.9 18 23.3 18 26H29Z"
+              fill="url(#splitElectric)"
+            />
+
+            {/* Central Glowing Synergy Badge */}
+            <Circle cx="16" cy="22.5" r="4.2" fill="url(#splitBadgeGrad)" />
+            <Circle cx="16" cy="22.5" r="3.4" stroke="#D97706" strokeWidth="0.8" fill="none" opacity="0.6" />
+
+            {/* Split Division Icon inside Badge (÷) */}
+            <Circle cx="16" cy="20.7" r="0.65" fill="#78350F" />
+            <Rect x="14.2" y="22.1" width="3.6" height="0.8" rx="0.4" fill="#78350F" />
+            <Circle cx="16" cy="24.3" r="0.65" fill="#78350F" />
+          </G>
+        ) : (
+          <G fill="url(#splitInactiveGrad)">
+            <Circle cx="10.5" cy="9.5" r="4.5" opacity="0.85" />
+            <Path d="M4 26C4 21.2 7 17.8 11.5 17.8C13.5 17.8 15.3 18.6 16.5 20C15.3 21.6 14.5 23.7 14.5 26H4Z" opacity="0.85" />
+            <Circle cx="21.5" cy="9.5" r="4.5" opacity="0.7" />
+            <Path d="M28 26C28 21.2 25 17.8 20.5 17.8C18.5 17.8 16.7 18.6 15.5 20C16.7 21.6 17.5 23.7 17.5 26H28Z" opacity="0.7" />
+          </G>
+        )}
+      </Svg>
+    </View>
+  );
+}
+
+// =============================================================================
+// 4. CÁ NHÂN (PROFILE) - Miu Miu Lucky Cat & Crown
+// Khuôn mặt mèo Miu Miu dễ thương, to rõ, tai hồng phấn, má ửng và chuông vàng
+// =============================================================================
+export function GlowProfileIcon({ focused, size = 30 }: GlowIconProps) {
+  const s = size;
+  return (
+    <View style={[styles.iconWrapper, focused && styles.activePill]}>
+      <Svg width={s} height={s} viewBox="0 0 32 32">
+        <Defs>
+          {/* Peach Sunset Face Gradient */}
+          <LinearGradient id="miuFaceGrad" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#FFA270" />
             <Stop offset="50%" stopColor="#FB7185" />
             <Stop offset="100%" stopColor="#E11D48" />
           </LinearGradient>
-          <LinearGradient id="profEarPink" x1="0" y1="0" x2="1" y2="1">
+          {/* Ears Gradient */}
+          <LinearGradient id="miuEarGrad" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#FDA4AF" />
             <Stop offset="100%" stopColor="#F43F5E" />
           </LinearGradient>
-          <LinearGradient id="profBellGold" x1="0" y1="0" x2="1" y2="1">
+          {/* Bell Gradient */}
+          <LinearGradient id="miuBellGrad" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#FDE047" />
-            <Stop offset="100%" stopColor="#D97706" />
+            <Stop offset="100%" stopColor="#F59E0B" />
           </LinearGradient>
-          <LinearGradient id="profInactive" x1="0" y1="0" x2="1" y2="1">
+          {/* Inactive */}
+          <LinearGradient id="miuInactiveGrad" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#CBD5E1" />
             <Stop offset="100%" stopColor="#94A3B8" />
           </LinearGradient>
@@ -257,43 +294,48 @@ export function GlowProfileIcon({ focused, size = 26 }: GlowIconProps) {
 
         {focused ? (
           <G>
-            {/* Cute Cat Ears (Left & Right) */}
-            <Path d="M7 11L6 4L13 7Z" fill="url(#profEarPink)" />
-            <Path d="M21 11L22 4L15 7Z" fill="url(#profEarPink)" />
-            <Path d="M7.8 9.5L7.2 5.5L11.5 7.5Z" fill="#FFF1F2" />
-            <Path d="M20.2 9.5L20.8 5.5L16.5 7.5Z" fill="#FFF1F2" />
+            {/* Cute Perky Cat Ears */}
+            <Path d="M7 11.5L6 3.5L14.5 7.5Z" fill="url(#miuEarGrad)" />
+            <Path d="M25 11.5L26 3.5L17.5 7.5Z" fill="url(#miuEarGrad)" />
+            {/* Inner Ear Fluff */}
+            <Path d="M8.2 9.8L7.5 5.5L12.5 7.8Z" fill="#FFF1F2" />
+            <Path d="M23.8 9.8L24.5 5.5L19.5 7.8Z" fill="#FFF1F2" />
 
-            {/* Miu Miu Head (Chubby Cute Face) */}
-            <Circle cx="14" cy="12" r="7.2" fill="url(#profGradPeach)" />
-            <Circle cx="12" cy="9.8" r="1.8" fill="#FFFFFF" opacity="0.6" />
+            {/* Miu Miu Chubby Round Face */}
+            <Circle cx="16" cy="13.5" r="8.8" fill="url(#miuFaceGrad)" />
+            <Circle cx="13.5" cy="10.8" r="2.2" fill="#FFFFFF" opacity="0.6" />
 
-            {/* Rosy Cheeks */}
-            <Circle cx="9.5" cy="13.2" r="1.3" fill="#FDA4AF" opacity="0.8" />
-            <Circle cx="18.5" cy="13.2" r="1.3" fill="#FDA4AF" opacity="0.8" />
+            {/* Blushing Rosy Cheeks */}
+            <Circle cx="10.5" cy="15.2" r="1.6" fill="#FDA4AF" opacity="0.85" />
+            <Circle cx="21.5" cy="15.2" r="1.6" fill="#FDA4AF" opacity="0.85" />
 
-            {/* Cute Cat Eyes & Nose */}
-            <Circle cx="11.5" cy="11.5" r="1.1" fill="#4C0519" />
-            <Circle cx="16.5" cy="11.5" r="1.1" fill="#4C0519" />
-            <Path d="M13.5 12.8L14.5 12.8L14 13.5Z" fill="#BE123C" />
+            {/* Cute Kawaii Eyes */}
+            <Circle cx="13" cy="13" r="1.3" fill="#4C0519" />
+            <Circle cx="19" cy="13" r="1.3" fill="#4C0519" />
+            <Circle cx="12.6" cy="12.6" r="0.5" fill="#FFFFFF" />
+            <Circle cx="18.6" cy="12.6" r="0.5" fill="#FFFFFF" />
 
-            {/* Body Base */}
+            {/* Cute Tiny Nose */}
+            <Path d="M15.4 14.6H16.6L16 15.3Z" fill="#881337" />
+
+            {/* Rounded Body Base */}
             <Path
-              d="M6.5 24C6.5 19.5 9.8 17.5 14 17.5C18.2 17.5 21.5 19.5 21.5 24"
-              fill="url(#profGradPeach)"
-              opacity="0.9"
+              d="M6 28.5C6 22.8 10.2 20 16 20C21.8 20 26 22.8 26 28.5H6Z"
+              fill="url(#miuFaceGrad)"
             />
 
-            {/* Golden Bell / Lucky Charm on Collar */}
-            <Circle cx="14" cy="18" r="2.6" fill="url(#profBellGold)" />
-            <Circle cx="13.3" cy="17.3" r="0.7" fill="#FFFFFF" />
+            {/* Lucky Golden Collar Bell */}
+            <Circle cx="16" cy="20.5" r="3.2" fill="url(#miuBellGrad)" />
+            <Circle cx="16" cy="20.5" r="2.4" stroke="#D97706" strokeWidth="0.6" fill="none" opacity="0.6" />
+            <Circle cx="15.2" cy="19.7" r="0.8" fill="#FFFFFF" />
           </G>
         ) : (
-          <G fill="url(#profInactive)">
-            {/* Inactive Cat Silhouette */}
-            <Path d="M7.5 10.5L6.5 5L12.5 7.5Z" opacity="0.7" />
-            <Path d="M20.5 10.5L21.5 5L15.5 7.5Z" opacity="0.7" />
-            <Circle cx="14" cy="12" r="6.5" opacity="0.85" />
-            <Path d="M7 23.5C7 19.5 10 18 14 18C18 18 21 19.5 21 23.5" opacity="0.7" />
+          <G fill="url(#miuInactiveGrad)">
+            <Path d="M7.5 11L6.5 4.5L14 8Z" opacity="0.8" />
+            <Path d="M24.5 11L25.5 4.5L18 8Z" opacity="0.8" />
+            <Circle cx="16" cy="13.5" r="8" opacity="0.9" />
+            <Path d="M7 28.5C7 23.5 10.8 21 16 21C21.2 21 25 23.5 25 28.5H7Z" opacity="0.8" />
+            <Circle cx="16" cy="21" r="2.5" fill="#FFFFFF" opacity="0.8" />
           </G>
         )}
       </Svg>
@@ -302,8 +344,8 @@ export function GlowProfileIcon({ focused, size = 26 }: GlowIconProps) {
 }
 
 // =============================================================================
-// 5. NÚT THÊM GIAO DỊCH TRUNG TÂM (CENTER ADD BUTTON) - Golden Paw Magic Orb
-// Nút tròn nổi bật với dấu chân mèo Miu Miu 9Paws vàng óng ánh và hiệu ứng tỏa sáng
+// 5. NÚT THÊM GIAO DỊCH TRUNG TÂM (CENTER ADD BUTTON) - 9Paws Golden Orb
+// Quả cầu 62px siêu nổi bật, dấu chân mèo Miu Miu dập nổi vàng óng và hào quang rực rỡ
 // =============================================================================
 export function GlowAddCenterButton(props: any) {
   const { t } = useTranslation();
@@ -311,64 +353,64 @@ export function GlowAddCenterButton(props: any) {
   return (
     <TouchableOpacity
       {...props}
-      activeOpacity={0.88}
+      activeOpacity={0.85}
       style={[styles.addButtonTouchable, props.style]}
       accessibilityRole="button"
       accessibilityLabel={t('tabs.addTransaction') || 'Thêm giao dịch'}
     >
       <View style={styles.addOrbContainer}>
-        {/* Glow Halo Background */}
+        {/* Glowing Orange Halo behind Orb */}
         <View style={styles.glowHalo} />
 
-        <Svg width={56} height={56} viewBox="0 0 56 56">
+        <Svg width={62} height={62} viewBox="0 0 62 62">
           <Defs>
-            {/* Sunset Flame Gradient */}
+            {/* Rich Sunset Flame Gradient */}
             <LinearGradient id="pawOrbGrad" x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0%" stopColor="#FFA03A" />
-              <Stop offset="50%" stopColor="#F15C22" />
-              <Stop offset="100%" stopColor="#E11D48" />
+              <Stop offset="0%" stopColor="#FFA726" />
+              <Stop offset="45%" stopColor="#F15C22" />
+              <Stop offset="100%" stopColor="#D81B60" />
             </LinearGradient>
-            {/* Golden Paw Highlight Gradient */}
-            <LinearGradient id="pawGoldGrad" x1="0" y1="0" x2="1" y2="1">
+            {/* Golden Paw Emboss Gradient */}
+            <LinearGradient id="pawGoldRelief" x1="0" y1="0" x2="1" y2="1">
               <Stop offset="0%" stopColor="#FFFFFF" />
               <Stop offset="40%" stopColor="#FFFBEB" />
               <Stop offset="100%" stopColor="#FDE68A" />
             </LinearGradient>
-            {/* Top Shine Specular */}
-            <LinearGradient id="orbShine" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.45" />
+            {/* Glossy Upper Shine */}
+            <LinearGradient id="orbGlassShine" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
               <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
             </LinearGradient>
           </Defs>
 
-          {/* Main Sphere */}
-          <Circle cx="28" cy="28" r="26" fill="url(#pawOrbGrad)" />
+          {/* Main 3D Sphere */}
+          <Circle cx="31" cy="31" r="29" fill="url(#pawOrbGrad)" />
 
-          {/* Glossy Top Specular Highlight */}
+          {/* Upper Glass Specular Arc */}
           <Path
-            d="M8 24C8 14.5 16 7 28 7C40 7 48 14.5 48 24C41 18 33 16 28 16C23 16 15 18 8 24Z"
-            fill="url(#orbShine)"
+            d="M8 27C8 16 18 8 31 8C44 8 54 16 54 27C46 20 37 18 31 18C25 18 16 20 8 27Z"
+            fill="url(#orbGlassShine)"
           />
 
-          {/* 9Paws Golden Paw Print with Plus Overlay */}
-          <G fill="url(#pawGoldGrad)">
-            {/* 4 Paw Toe Beans */}
-            <Circle cx="20" cy="19.5" r="2.8" />
-            <Circle cx="25.2" cy="16.5" r="3.1" />
-            <Circle cx="30.8" cy="16.5" r="3.1" />
-            <Circle cx="36" cy="19.5" r="2.8" />
+          {/* 9Paws Golden Mascot Paw (Large, Bold & Chunky) */}
+          <G fill="url(#pawGoldRelief)">
+            {/* 4 Chunky Rounded Toe Beans */}
+            <Circle cx="21" cy="20.5" r="3.6" />
+            <Circle cx="27.5" cy="17" r="4.1" />
+            <Circle cx="34.5" cy="17" r="4.1" />
+            <Circle cx="41" cy="20.5" r="3.6" />
 
-            {/* Main Center Paw Pad with Star / Plus relief */}
+            {/* Main Center Heart-shaped Curved Pad */}
             <Path
-              d="M20.5 27C19.5 28.5 19 30.5 20.2 32.5C21.5 34.5 24 35.5 28 35.5C32 35.5 34.5 34.5 35.8 32.5C37 30.5 36.5 28.5 35.5 27C33.8 24.5 30.5 24 28 24C25.5 24 22.2 24.5 20.5 27Z"
+              d="M21.5 28.5C20.2 30.5 19.8 33 21.2 35.5C22.8 38.2 26.2 39.5 31 39.5C35.8 39.5 39.2 38.2 40.8 35.5C42.2 33 41.8 30.5 40.5 28.5C38.5 25.5 34.5 25 31 25C27.5 25 23.5 25.5 21.5 28.5Z"
             />
           </G>
 
-          {/* Clean Brilliant Plus inside the Center Pad */}
+          {/* Pure Brilliant Plus Symbol at Center of Pad */}
           <Path
-            d="M28 26.5V33M24.8 29.8H31.2"
+            d="M31 29V36M27.5 32.5H34.5"
             stroke="#D97706"
-            strokeWidth="2.4"
+            strokeWidth="3.2"
             strokeLinecap="round"
           />
         </Svg>
@@ -378,11 +420,15 @@ export function GlowAddCenterButton(props: any) {
 }
 
 const styles = StyleSheet.create({
-  iconContainer: {
+  iconWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 30,
-    width: 30,
+    height: 38,
+    width: 44,
+    borderRadius: 20,
+  },
+  activePill: {
+    backgroundColor: 'rgba(241, 92, 34, 0.08)',
   },
   addButtonTouchable: {
     flex: 1,
@@ -390,25 +436,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addOrbContainer: {
-    width: 56,
-    height: 56,
-    marginBottom: 20,
+    width: 62,
+    height: 62,
+    marginBottom: 24,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
   glowHalo: {
     position: 'absolute',
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#F15C22',
-    opacity: 0.35,
-    transform: [{ scale: 1.15 }],
+    opacity: 0.4,
+    transform: [{ scale: 1.18 }],
     shadowColor: '#F15C22',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 12,
   },
 });

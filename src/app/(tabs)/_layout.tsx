@@ -36,9 +36,9 @@ export default function TabsLayout() {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#F3F4F6',
           borderTopWidth: 1,
-          height: 70,
+          height: 74,
           paddingBottom: 10,
-          paddingTop: 8,
+          paddingTop: 6,
           maxWidth: isWide ? maxContentWidth : undefined,
           width: '100%',
           alignSelf: 'center',
@@ -64,14 +64,14 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('tabs.overview'),
-          tabBarIcon: ({ focused }) => <GlowOverviewIcon focused={focused} size={25} />,
+          tabBarIcon: ({ focused }) => <GlowOverviewIcon focused={focused} size={30} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: t('tabs.history'),
-          tabBarIcon: ({ focused }) => <GlowExpenseIcon focused={focused} size={25} />,
+          tabBarIcon: ({ focused }) => <GlowExpenseIcon focused={focused} size={30} />,
         }}
       />
       <Tabs.Screen
@@ -85,14 +85,14 @@ export default function TabsLayout() {
         name="split"
         options={{
           title: t('tabs.split'),
-          tabBarIcon: ({ focused }) => <GlowSplitIcon focused={focused} size={25} />,
+          tabBarIcon: ({ focused }) => <GlowSplitIcon focused={focused} size={30} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: t('tabs.profile'),
-          tabBarIcon: ({ focused }) => <GlowProfileIcon focused={focused} size={25} />,
+          tabBarIcon: ({ focused }) => <GlowProfileIcon focused={focused} size={30} />,
         }}
       />
     </Tabs>
