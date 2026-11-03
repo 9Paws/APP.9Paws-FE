@@ -92,7 +92,19 @@ app_data["expo"] = expo_config
 with open(app_json_path, "w", encoding="utf-8") as f:
     json.dump(app_data, f, indent=2)
 
-print(f"🎉 Đã cập nhật app.json: Version {current_version} -> {new_version} | versionCode: {android_config['versionCode']}")
+pkg_json_path = "package.json"
+if os.path.exists(pkg_json_path):
+    try:
+        with open(pkg_json_path, "r", encoding="utf-8") as f:
+            pkg_data = json.load(f)
+        pkg_data["version"] = new_version
+        with open(pkg_json_path, "w", encoding="utf-8") as f:
+            json.dump(pkg_data, f, indent=2)
+        print(f"📦 Đã đồng bộ package.json: Version -> {new_version}")
+    except Exception as e:
+        print(f"⚠️ Không thể cập nhật package.json: {e}")
+
+print(f"🎉 Đã cập nhật app.json & package.json: Version {current_version} -> {new_version} | versionCode: {android_config['versionCode']}")
 
 # 4. Xuất kết quả ra file để GitHub Actions sử dụng ở các bước sau
 github_output = os.environ.get("GITHUB_OUTPUT", "")

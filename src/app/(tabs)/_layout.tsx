@@ -1,49 +1,14 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { History, LayoutGrid, Plus, User, Users } from 'lucide-react-native';
-
-function AddCenterButton(props: any) {
-  const { t } = useTranslation();
-  return (
-    <TouchableOpacity
-      {...props}
-      activeOpacity={0.85}
-      style={[
-        props.style,
-        {
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-      ]}
-      accessibilityRole="button"
-      accessibilityLabel={t('tabs.addTransaction')}
-    >
-      <View style={styles.addButton}>
-        <Plus size={28} color="#FFFFFF" strokeWidth={2.5} />
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-const styles = StyleSheet.create({
-  addButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#F15C22',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    shadowColor: '#F15C22',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-});
+import {
+  GlowOverviewIcon,
+  GlowExpenseIcon,
+  GlowAddCenterButton,
+  GlowSplitIcon,
+  GlowProfileIcon,
+} from '@/components/icons/GlowTabIcons';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -71,9 +36,9 @@ export default function TabsLayout() {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#F3F4F6',
           borderTopWidth: 1,
-          height: 68,
+          height: 74,
           paddingBottom: 10,
-          paddingTop: 8,
+          paddingTop: 6,
           maxWidth: isWide ? maxContentWidth : undefined,
           width: '100%',
           alignSelf: 'center',
@@ -87,10 +52,11 @@ export default function TabsLayout() {
             : {}),
         },
         tabBarActiveTintColor: '#F15C22',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarInactiveTintColor: '#94A3B8',
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: '700',
+          marginTop: 2,
         },
       }}
     >
@@ -98,35 +64,35 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('tabs.overview'),
-          tabBarIcon: ({ color, size }) => <LayoutGrid size={size} color={color} />,
+          tabBarIcon: ({ focused }) => <GlowOverviewIcon focused={focused} size={30} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: t('tabs.history'),
-          tabBarIcon: ({ color, size }) => <History size={size} color={color} />,
+          tabBarIcon: ({ focused }) => <GlowExpenseIcon focused={focused} size={30} />,
         }}
       />
       <Tabs.Screen
         name="add"
         options={{
           title: '',
-          tabBarButton: (props) => <AddCenterButton {...props} />,
+          tabBarButton: (props) => <GlowAddCenterButton {...props} />,
         }}
       />
       <Tabs.Screen
         name="split"
         options={{
           title: t('tabs.split'),
-          tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
+          tabBarIcon: ({ focused }) => <GlowSplitIcon focused={focused} size={30} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: t('tabs.profile'),
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+          tabBarIcon: ({ focused }) => <GlowProfileIcon focused={focused} size={30} />,
         }}
       />
     </Tabs>
