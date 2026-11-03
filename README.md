@@ -317,13 +317,9 @@ Chúng tôi áp dụng quy tắc [Conventional Commits](https://www.conventional
 ## 👥 Đội ngũ phát triển & Bản quyền (Team & License)
 
 ### Đơn vị & Tác giả phát triển:
-- **Đơn vị đào tạo**: Trường Đại học Công nghệ Thông tin (UIT - VNU-HCM) & Trường Đại học Công nghệ TP.HCM (HUTECH).
+- **Đơn vị đào tạo**: Trường Đại học Công nghệ Thông tin (UIT - VNU-HCM).
 - **Nguyễn Đại Hưng**: Đồng sáng lập & Lập trình viên chính (Lead Mobile Developer).
 - **Hoàng Đức Chính**: Đồng sáng lập & Lập trình viên chính (Core Backend & Infrastructure).
-
-### Hỗ trợ & Liên hệ:
-- 📧 **Email tiếp nhận phản hồi & khiếu nại**: `support@9paws.com`
-- 🔒 **Bộ phận bảo vệ quyền riêng tư**: `privacy@9paws.com`
 
 ---
 
