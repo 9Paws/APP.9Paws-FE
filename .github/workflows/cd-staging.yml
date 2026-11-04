@@ -5,28 +5,15 @@ on:
         branches: [main]
 
 jobs:
-    verify-quality:
-        name: Verify Code Quality
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22
-                  cache: "npm"
-            - run: npm ci
-            - run: npm run lint
-            - run: npx tsc --noEmit
-
-    build-staging-apk:
-        name: Build Lightweight APK (arm64-v8a)
-        needs: verify-quality
+    staging-pipeline:
+        name: Build Fast Staging APK & Notify Testers
         runs-on: ubuntu-latest
         permissions:
             contents: write
             pull-requests: read
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout Code
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0 # Kéo toàn bộ lịch sử commit để đọc thông tin PR
 
@@ -36,44 +23,42 @@ jobs:
                   node-version: 22
                   cache: "npm"
 
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Verify Code Quality (Lint & Typecheck)
+              run: |
+                  npm run lint
+                  npx tsc --noEmit
+
             - name: Set up Java JDK 17
               uses: actions/setup-java@v4
               with:
                   distribution: "temurin"
                   java-version: "17"
 
-            - name: Set up Gradle Cache
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.gradle/caches
-                      ~/.gradle/wrapper
-                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gradle-
+            - name: Generate Android Native Project (Fast Prebuild)
+              run: npx expo prebuild --platform android --clean --no-install
 
-            - name: Install dependencies
-              run: npm ci
-
-            - name: Generate Android Native Project
-              run: npx expo prebuild --platform android --clean
+            - name: Setup Gradle Build Cache
+              uses: gradle/actions/setup-gradle@v4
 
             - name: Restore Keystore from Secrets
               run: |
                   echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore
 
-            - name: Configure Gradle Signing & ABI Filter
+            - name: Configure Gradle Signing & Extreme Speed Tuning
               env:
                   KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
                   KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
                   KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
               run: python3 .github/scripts/configure-staging-gradle.py
 
-            - name: Build APK via Gradle
+            - name: Build APK via Parallel Gradle
               run: |
                   cd android
                   chmod +x gradlew
-                  ./gradlew assembleRelease --no-daemon
+                  ./gradlew assembleRelease --build-cache --parallel
 
             - name: Check APK Size
               run: |
