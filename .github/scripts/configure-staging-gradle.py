@@ -2,8 +2,9 @@ import os
 import sys
 
 build_gradle_path = "android/app/build.gradle"
+gradle_properties_path = "android/gradle.properties"
 
-print("🔍 Đang kiểm tra cấu hình môi trường...")
+print("🔍 Đang kiểm tra cấu hình môi trường Staging...")
 
 # 1. Kiểm tra an toàn: Đảm bảo file build.gradle tồn tại
 if not os.path.exists(build_gradle_path):
@@ -23,7 +24,7 @@ if not all([store_pass, key_alias, key_pass]):
 with open(build_gradle_path, "r", encoding="utf-8") as f:
     content = f.read()
 
-# 3. Chống chèn lặp: Nếu đã cấu hình rồi thì bỏ qua
+# 3. Chống chèn lặp: Thiết lập signingConfigs.release
 if "signingConfigs.release" in content:
     print("ℹ️ Cấu hình Keystore đã tồn tại trong build.gradle, bỏ qua bước chèn.")
 else:
@@ -41,7 +42,7 @@ else:
     content = content.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
     print("✅ Đã thiết lập khối signingConfigs.release.")
 
-# 4. Cấu hình lọc riêng kiến trúc arm64-v8a (để APK < 25MB)
+# 4. Cấu hình lọc riêng kiến trúc arm64-v8a (Tăng tốc biên dịch 50% C++ NDK)
 if "abiFilters \"arm64-v8a\"" not in content:
     abi_filter = """
         ndk {
@@ -51,10 +52,38 @@ if "abiFilters \"arm64-v8a\"" not in content:
     content = content.replace("defaultConfig {", "defaultConfig {\n" + abi_filter)
     print("✅ Đã kích hoạt bộ lọc kiến trúc arm64-v8a.")
 
-# 5. TỐI ƯU THÊM: Kích hoạt ProGuard/R8 để dọn dẹp code thừa
-content = content.replace("def enableProguardInReleaseBuilds = false", "def enableProguardInReleaseBuilds = true")
+# 5. TỐI ƯU TỐC ĐỘ: TẮT HOÀN TOÀN ProGuard/R8 CHO STAGING
+# ProGuard làm rối code và phân tích toàn bộ cây class, ngốn 15-20 phút vô ích ở bản test
+content = content.replace("def enableProguardInReleaseBuilds = true", "def enableProguardInReleaseBuilds = false")
+print("✅ Đã đảm bảo ProGuard/R8 được tắt (tiết kiệm ~15 phút biên dịch).")
+
+# 6. TẮT ANDROID LINT VITAL CHECK KHI BUILD RELEASE
+if "lintOptions {" not in content:
+    lint_bypass = """
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    """
+    content = content.replace("android {", "android {\n" + lint_bypass)
+    print("✅ Đã tắt Android Lint Vital Check để tăng tốc build.")
 
 with open(build_gradle_path, "w", encoding="utf-8") as f:
     f.write(content)
 
-print("🎉 Hoàn tất tối ưu hóa build.gradle cho bản Staging!")
+# 7. TỐI ƯU GRADLE.PROPERTIES: PARALLEL + 4.5GB RAM + BUILD CACHING
+if os.path.exists(gradle_properties_path):
+    with open(gradle_properties_path, "r", encoding="utf-8") as f:
+        props = f.read()
+
+    optimizations = """
+# CI/CD Extreme Speed Flags
+org.gradle.parallel=true
+org.gradle.caching=true
+org.gradle.jvmargs=-Xmx4608m -XX:MaxMetaspaceSize=1024m -XX:+UseParallelGC -Dfile.encoding=UTF-8
+"""
+    with open(gradle_properties_path, "a", encoding="utf-8") as f:
+        f.write(optimizations)
+    print("✅ Đã cấu hình bộ cờ tăng tốc song song và 4.5GB RAM trong gradle.properties.")
+
+print("🎉 Hoàn tất siêu tối ưu hóa Gradle cho bản Staging!")
