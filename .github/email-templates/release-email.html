@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bàn Giao Ứng Dụng 9Paws</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #f7fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2d3748;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+        style="background-color: #f7fafc; padding: 35px 15px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%"
+                    style="max-width: 620px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td
+                            style="background: linear-gradient(135deg, #1a365d, #2b6cb0); padding: 28px 32px; text-align: left;">
+                            <h1
+                                style="margin: 0; font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">
+                                🐾 Bàn Giao Ứng Dụng 9Paws</h1>
+                            <p style="margin: 6px 0 0 0; font-size: 14px; color: #bee3f8;">Phiên bản phát hành chính
+                                thức: <b>v{{NEW_VERSION}}</b></p>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 32px;">
+                            <p style="font-size: 15px; line-height: 1.6; margin-top: 0; color: #2d3748;">
+                                Kính gửi <b>Quý Khách hàng</b>,
+                            </p>
+                            <p style="font-size: 15px; line-height: 1.6; color: #4a5568;">
+                                Đội ngũ phát triển <b>9Paws</b> xin trân trọng bàn giao phiên bản ứng dụng di động mới
+                                nhất (<b>v{{NEW_VERSION}}</b>) đã được đóng gói và vượt qua các tiêu chuẩn kiểm thử chất
+                                lượng.
+                            </p>
+
+                            <!-- Release Notes Box -->
+                            <div
+                                style="background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 16px 20px; margin: 24px 0; border-radius: 6px;">
+                                <h4
+                                    style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #2b6cb0; text-transform: uppercase;">
+                                    📌 Những điểm nổi bật trong phiên bản này:</h4>
+                                <div style="font-size: 14px; line-height: 1.7; color: #2c5282; white-space: pre-wrap;">
+                                    {{CHANGELOG}}</div>
+                            </div>
+
+                            <!-- QR Code & Download Box -->
+                            <div
+                                style="text-align: center; background-color: #f7fafc; border: 1px dashed #cbd5e0; border-radius: 10px; padding: 28px 20px; margin: 26px 0;">
+                                <p
+                                    style="font-size: 14px; font-weight: 600; color: #4a5568; margin-top: 0; margin-bottom: 12px;">
+                                    Quét mã QR bằng điện thoại Android để tải nhanh:</p>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{DOWNLOAD_URL}}"
+                                    alt="QR Code"
+                                    style="border: 4px solid #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+
+                                <div style="margin-top: 20px;">
+                                    <a href="{{DOWNLOAD_URL}}"
+                                        style="display: inline-block; background-color: #3182ce; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 13px 30px; border-radius: 6px; box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);">Tải
+                                        Xuống File Cài Đặt (.APK)</a>
+                                </div>
+                            </div>
+
+                            <!-- Install Guide -->
+                            <h4 style="font-size: 14px; color: #2d3748; margin-bottom: 8px;">Hướng dẫn cài đặt nhanh:
+                            </h4>
+                            <ol
+                                style="font-size: 13px; line-height: 1.7; color: #718096; padding-left: 20px; margin-top: 0;">
+                                <li>Bấm vào nút tải xuống ở trên hoặc quét mã QR bằng camera điện thoại.</li>
+                                <li>Mở file <code>.apk</code> vừa tải xuống và chọn <b>Cài đặt (Install)</b>.</li>
+                                <li>Nếu máy yêu cầu cấp quyền, hãy chọn <i>"Cho phép cài đặt ứng dụng từ nguồn này"</i>.
+                                </li>
+                            </ol>
+
+                            <!-- Footer -->
+                            <div
+                                style="margin-top: 35px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #718096; line-height: 1.6;">
+                                Nếu Quý khách hàng cần hỗ trợ kỹ thuật trong quá trình cài đặt và trải nghiệm, xin vui
+                                lòng phản hồi lại email này.<br><br>
+                                Trân trọng,<br>
+                                <b>Đội ngũ Phát triển 9Paws</b>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

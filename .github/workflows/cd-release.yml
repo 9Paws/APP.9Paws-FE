@@ -1,0 +1,152 @@
+name: CD Release - AI Auto-Version & Client Delivery (releases)
+
+# Kịch bản này tự động chạy khi merge code vào nhánh releases
+on:
+    push:
+        branches: [releases]
+
+jobs:
+    # ----------------------------------------------------------------------------
+    # JOB 1: KIỂM TRA CHẤT LƯỢNG CODE TRƯỚC KHI RELEASE
+    # ----------------------------------------------------------------------------
+    verify-quality:
+        name: Verify Code Quality
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "npm"
+            - run: npm ci
+            - run: npm run lint
+            - run: npx tsc --noEmit
+
+    # ----------------------------------------------------------------------------
+    # JOB 2: GEMINI AI TỰ ĐỘNG TĂNG VERSION & TẠO CHANGELOG
+    # ----------------------------------------------------------------------------
+    bump-version-and-changelog:
+        name: AI Bump Version & Changelog
+        needs: verify-quality
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write # Cần quyền để commit code và push tag lên repo
+        outputs:
+            new_version: ${{ steps.ai_bump.outputs.new_version }}
+            changelog: ${{ steps.ai_bump.outputs.changelog }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.x"
+
+            # Chạy script AI tự động tăng version
+            - name: Run AI Version Bump Script
+              id: ai_bump
+              env:
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+              run: python3 .github/scripts/ai-release-bump.py
+
+            # Tự động commit file app.json đã cập nhật version và tạo Git Tag vX.Y.Z
+            - name: Commit Updated Version & Push Tag
+              run: |
+                  NEW_VER="${{ steps.ai_bump.outputs.new_version }}"
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git add app.json package.json
+                  git commit -m "chore(release): bump version to v${NEW_VER} [skip ci]" || echo "No changes to commit"
+                  git tag "v${NEW_VER}"
+                  git push origin releases --tags
+
+    # ----------------------------------------------------------------------------
+    # JOB 3: BUILD PRODUCTION APK TRÊN EXPO EAS CLOUD
+    # ----------------------------------------------------------------------------
+    build-production-eas:
+        name: Build Production on EAS Cloud
+        needs: bump-version-and-changelog
+        runs-on: ubuntu-latest
+        outputs:
+            download_url: ${{ steps.eas_build.outputs.download_url }}
+        steps:
+            # Lấy code mới nhất đã có version vừa được cập nhật ở Job 2
+            - uses: actions/checkout@v4
+              with:
+                  ref: releases
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "npm"
+
+            - run: npm ci
+
+            - name: Set up EAS CLI
+              uses: expo/expo-github-action@v8
+              with:
+                  eas-version: latest
+                  token: ${{ secrets.EXPO_TOKEN }}
+
+            # Build profile production trên EAS Cloud
+            - name: Build Production APK via EAS
+              id: eas_build
+              run: |
+                  eas build --platform android --profile production --non-interactive --json > build_output.json
+                  DOWNLOAD_URL=$(jq -r '.[0].artifacts.buildUrl' build_output.json)
+                  echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+
+    # ----------------------------------------------------------------------------
+    # JOB 4: TẠO GITHUB RELEASE CHÍNH THỨC & GỬI EMAIL CHO KHÁCH HÀNG
+    # ----------------------------------------------------------------------------
+    deliver-to-client:
+        name: Create GitHub Release & Email Clients
+        needs: [bump-version-and-changelog, build-production-eas]
+        runs-on: ubuntu-latest
+        steps:
+            # 1. Tạo bản Release chính thức trên GitHub Releases
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  tag_name: "v${{ needs.bump-version-and-changelog.outputs.new_version }}"
+                  name: "Phiên bản Release v${{ needs.bump-version-and-changelog.outputs.new_version }}"
+                  body: |
+                      ### 🐾 9Paws Mobile App — Bản Phát Hành Chính Thức
+                      **Ghi chú phát hành (Release Notes):**
+                      ${{ needs.bump-version-and-changelog.outputs.changelog }}
+
+                      - 📲 **Đường dẫn tải APK trực tiếp:** [Tải tại đây](<${{ needs.build-production-eas.outputs.download_url }}>)
+                  draft: false
+                  prerelease: false
+
+            # 2. Điền thông tin vào mẫu Email
+            - name: Prepare Release Email Content
+              run: |
+                  python3 -c "
+                  with open('.github/email-templates/release-email.html', 'r', encoding='utf-8') as f:
+                      html = f.read()
+
+                  html = html.replace('{{NEW_VERSION}}', '${{ needs.bump-version-and-changelog.outputs.new_version }}')
+                  html = html.replace('{{CHANGELOG}}', '''${{ needs.bump-version-and-changelog.outputs.changelog }}''')
+                  html = html.replace('{{DOWNLOAD_URL}}', '${{ needs.build-production-eas.outputs.download_url }}')
+
+                  with open('release-email-ready.html', 'w', encoding='utf-8') as f:
+                      f.write(html)
+                  "
+
+            # 3. Gửi email bàn giao trang trọng cho Khách hàng
+            - name: Send Email to Clients
+              uses: dawidd6/action-send-mail@v3
+              with:
+                  server_address: smtp.gmail.com
+                  server_port: 465
+                  secure: true
+                  username: ${{ secrets.MAIL_USERNAME }}
+                  password: ${{ secrets.MAIL_PASSWORD }}
+                  subject: "🎉 [9Paws] Bàn giao phiên bản ứng dụng chính thức v${{ needs.bump-version-and-changelog.outputs.new_version }}"
+                  to: ${{ secrets.CLIENT_EMAILS }}
+                  from: "9Paws Team <${{ secrets.MAIL_USERNAME }}>"
+                  html_body: file://release-email-ready.html

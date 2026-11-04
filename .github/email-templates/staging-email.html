@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thông Báo Bản Build Staging 9Paws</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333333;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+        style="background-color: #f4f6f8; padding: 30px 15px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%"
+                    style="max-width: 620px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e1e4e8; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+
+                    <!-- Header Banner -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1f2937, #374151); padding: 26px 32px; text-align: left;">
+                            <h1 style="margin: 0; font-size: 21px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">
+                                🐾 9Paws Mobile — Bản Thử Nghiệm Staging
+                            </h1>
+                            <p style="margin: 6px 0 0 0; font-size: 13px; color: #9ca3af;">
+                                Build tự động từ nhánh <b>main</b> • Lần chạy <b>#{{RUN_NUMBER}}</b>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Main Body -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <p style="font-size: 15px; line-height: 1.6; margin-top: 0; color: #2d3748;">
+                                Kính gửi <b>Đội ngũ Kiểm thử (QA / QC Team)</b>,
+                            </p>
+                            <p style="font-size: 15px; line-height: 1.6; color: #4a5568;">
+                                Hệ thống CI/CD tự động xin trân trọng thông báo phiên bản thử nghiệm mới của
+                                ứng dụng di động <b>9Paws</b> đã được biên dịch thành công từ nhánh <b>main</b> và sẵn sàng để kiểm thử.
+                            </p>
+
+                            <!-- PR Title Card -->
+                            <div
+                                style="background-color: #f7fafc; border-left: 4px solid #f15c22; padding: 14px 18px; margin: 20px 0 16px 0; border-radius: 4px;">
+                                <span
+                                    style="font-size: 11px; font-weight: 700; color: #718096; text-transform: uppercase; letter-spacing: 0.8px;">
+                                    Mục tiêu cập nhật:
+                                </span>
+                                <h3 style="margin: 6px 0 0 0; font-size: 16px; color: #2d3748; font-weight: 600;">
+                                    {{PR_TITLE}}
+                                </h3>
+                            </div>
+
+                            <!-- PR Description Content -->
+                            <div
+                                style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; background-color: #ffffff; margin-bottom: 24px;">
+                                <h4
+                                    style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #4a5568; text-transform: uppercase;">
+                                    Chi tiết thay đổi & Nội dung kiểm thử:
+                                </h4>
+                                <div
+                                    style="font-size: 14px; line-height: 1.6; color: #4a5568; white-space: pre-wrap; font-family: inherit;">
+                                    {{PR_BODY}}
+                                </div>
+                            </div>
+
+                            <!-- QR Code & Direct Download Box -->
+                            <div
+                                style="text-align: center; background-color: #f9fafb; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 26px 20px; margin: 26px 0;">
+                                <p style="font-size: 14px; font-weight: 600; color: #374151; margin-top: 0; margin-bottom: 12px;">
+                                    Quét mã QR bằng điện thoại Android để tải nhanh:
+                                </p>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{DOWNLOAD_URL}}"
+                                    alt="QR Code Tải APK Staging"
+                                    style="border: 4px solid #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+
+                                <div style="margin-top: 20px;">
+                                    <a href="{{DOWNLOAD_URL}}"
+                                        style="display: inline-block; background-color: #f15c22; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 13px 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(241, 92, 34, 0.3);">
+                                        📲 Tải Xuống Bản Staging (.APK)
+                                    </a>
+                                </div>
+                                <p style="margin: 12px 0 0 0; font-size: 12px; color: #6b7280;">
+                                    Tệp cài đặt: <b>9Paws-Staging.apk</b> • Tối ưu kiến trúc: <b>arm64-v8a</b>
+                                </p>
+                            </div>
+
+                            <!-- Install Guide -->
+                            <h4 style="font-size: 14px; color: #2d3748; margin-bottom: 8px;">
+                                Hướng dẫn cài đặt nhanh cho Tester:
+                            </h4>
+                            <ol style="font-size: 13px; line-height: 1.7; color: #718096; padding-left: 20px; margin-top: 0;">
+                                <li>Bấm nút <b>Tải Xuống Bản Staging (.APK)</b> hoặc dùng camera điện thoại quét mã QR bên trên.</li>
+                                <li>Mở tệp <code>9Paws-Staging.apk</code> vừa tải xuống và chọn <b>Cài đặt (Install)</b>.</li>
+                                <li>Nếu Android hiển thị cảnh báo nguồn chưa xác định, chọn <i>"Cho phép từ nguồn này"</i> hoặc <i>"Vẫn cài đặt"</i>.</li>
+                            </ol>
+
+                            <!-- Fallback Link -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 24px;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="https://github.com/{{REPOSITORY}}/actions/runs/{{RUN_ID}}"
+                                            style="display: inline-block; font-size: 12px; color: #6b7280; text-decoration: underline;">
+                                            🔗 Xem chi tiết Workflow Run & Artifact trên GitHub Actions
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Security / Anti-Spam Footer Note -->
+                            <div
+                                style="margin-top: 25px; padding: 12px 16px; background-color: #f3f4f6; border-radius: 8px; text-align: center;">
+                                <p style="margin: 0; font-size: 11px; color: #6b7280; line-height: 1.5;">
+                                    🔒 <i>Email thông báo tự động từ hệ thống CI/CD bảo mật của 9Paws. Thư không đính kèm tệp nhị phân trực tiếp nhằm bảo đảm an toàn dữ liệu và tuân thủ tiêu chuẩn phòng chống thư rác của máy chủ email.</i>
+                                </p>
+                            </div>
+
+                            <!-- Footer Signature -->
+                            <div
+                                style="margin-top: 30px; padding-top: 18px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #6b7280; line-height: 1.6;">
+                                Mọi phản hồi về lỗi giao diện hoặc tính năng, xin vui lòng tạo Issue trên GitHub hoặc phản hồi trực tiếp cho đội ngũ phát triển.<br><br>
+                                Trân trọng,<br>
+                                <b>9Paws Engineering Team</b>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
