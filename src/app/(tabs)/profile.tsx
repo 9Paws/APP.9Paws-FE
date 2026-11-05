@@ -162,7 +162,7 @@ export default function ProfileScreen() {
   const [isGoogleLinkModalVisible, setIsGoogleLinkModalVisible] = useState(false);
   const [isUpdatingGoogleLink, setIsUpdatingGoogleLink] = useState(false);
 
-  const isGoogleLinked = !!user?.isGoogleLinked;
+  const isGoogleLinked = !!user?.isGoogleLinked || user?.authProvider === 'GOOGLE';
 
   // Feedback form state
   const [feedbackTitle, setFeedbackTitle] = useState('');
@@ -715,49 +715,30 @@ export default function ProfileScreen() {
             </View>
             <View className="h-px bg-gray-100 my-1" />
 
-            {/* Liên kết tài khoản Google (isGoogleLinked) */}
-            <SettingRow
-              icon={<GoogleIcon size={20} />}
-              iconBgColor="bg-red-50"
-              title={t('profile.googleAccount')}
-              subtitle={
-                isGoogleLinked
-                  ? t('profile.googleAccountLinked')
-                  : t('profile.googleAccountUnlinked')
-              }
-              onPress={() => {
-                if (isGoogleLinked) {
-                  showToast({
-                    type: 'info',
-                    title: t('common.notice'),
-                    message: t('profile.googleAlreadyLinkedNotice'),
-                  });
-                } else {
-                  setIsGoogleLinkModalVisible(true);
-                }
-              }}
-              rightElement={
-                isGoogleLinked ? (
-                  <View className="flex-row items-center bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full">
-                    <Check size={13} color="#059669" />
-                    <Text className="ml-1 text-xs font-semibold text-emerald-700">
-                      {t('profile.googleLinkedBadge')}
-                    </Text>
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => setIsGoogleLinkModalVisible(true)}
-                    className="bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full"
-                  >
-                    <Text className="text-xs font-bold text-brand">
-                      {t('profile.linkGoogleNow')}
-                    </Text>
-                  </TouchableOpacity>
-                )
-              }
-            />
-            <View className="h-px bg-gray-100 my-1" />
+            {/* Liên kết tài khoản Google: Ẩn hoàn toàn khi đã liên kết xong */}
+            {!isGoogleLinked && (
+              <>
+                <SettingRow
+                  icon={<GoogleIcon size={20} />}
+                  iconBgColor="bg-red-50"
+                  title={t('profile.googleAccount')}
+                  subtitle={t('profile.googleAccountUnlinked')}
+                  onPress={() => setIsGoogleLinkModalVisible(true)}
+                  rightElement={
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setIsGoogleLinkModalVisible(true)}
+                      className="bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full"
+                    >
+                      <Text className="text-xs font-bold text-brand">
+                        {t('profile.linkGoogleNow')}
+                      </Text>
+                    </TouchableOpacity>
+                  }
+                />
+                <View className="h-px bg-gray-100 my-1" />
+              </>
+            )}
 
             <SettingRow
               icon={<Bell size={20} color="#3B82F6" />}

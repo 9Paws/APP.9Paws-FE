@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import subprocess
 
 # Đảm bảo mã hóa UTF-8 cho stdout trên mọi hệ điều hành
 if hasattr(sys.stdout, "reconfigure"):
@@ -131,5 +132,25 @@ android.enablePngCrunchInReleaseBuilds=true
     with open(gradle_properties_path, "w", encoding="utf-8") as f:
         f.write(props)
     print("Configured gradle.properties for 100% Android device compatibility!")
+
+# In mã SHA-1/SHA-256 fingerprint của release.keystore để cấu hình Google Sign-In trên Google Cloud Console
+keystore_path = "android/app/release.keystore"
+if os.path.exists(keystore_path):
+    try:
+        res = subprocess.run(
+            ["keytool", "-list", "-v", "-keystore", keystore_path, "-alias", key_alias, "-storepass", store_pass],
+            capture_output=True,
+            text=True
+        )
+        print("\n" + "="*80)
+        print("🔑 CERTIFICATE FINGERPRINTS (GOOGLE SIGN-IN OAUTH CREDENTIALS):")
+        for line in res.stdout.splitlines():
+            if "SHA1:" in line or "SHA256:" in line:
+                print("   " + line.strip())
+        print("👉 Hướng dẫn: Thêm mã SHA-1 ở trên vào Google Cloud Console -> Credentials")
+        print("   -> OAuth 2.0 Client ID loại Android với package 'com.ninepaws.app'")
+        print("="*80 + "\n")
+    except Exception as e:
+        print(f"Could not read keystore fingerprints: {e}")
 
 print("Successfully configured Staging Gradle!")

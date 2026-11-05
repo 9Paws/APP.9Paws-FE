@@ -15,14 +15,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FAF7F2",
-        "foregroundImage": "./assets/images/icon.png"
+        "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.ninepaws.app"
     },
     "web": {
       "output": "server",
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
