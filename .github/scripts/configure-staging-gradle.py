@@ -9,7 +9,7 @@ if hasattr(sys.stdout, "reconfigure"):
 build_gradle_path = "android/app/build.gradle"
 gradle_properties_path = "android/gradle.properties"
 
-print("🔍 Đang cấu hình siêu tối ưu hóa dung lượng và tốc độ cho Staging APK...")
+print("🔍 Đang cấu hình môi trường Staging (Hỗ trợ 100% dòng máy Android)...")
 
 # 1. Kiểm tra an toàn: Đảm bảo file build.gradle tồn tại
 if not os.path.exists(build_gradle_path):
@@ -29,7 +29,7 @@ if not all([store_pass, key_alias, key_pass]):
 with open(build_gradle_path, "r", encoding="utf-8") as f:
     content = f.read()
 
-# 3. Chống chèn lặp: Thiết lập signingConfigs.release
+# 3. Chống chèn lặp: Thiết lập signingConfigs.release với cả V1 và V2 Signing
 if "signingConfigs.release" in content:
     print("Keystore configuration already exists in build.gradle, skipping.")
 else:
@@ -40,24 +40,46 @@ else:
                 storePassword '{store_pass}'
                 keyAlias '{key_alias}'
                 keyPassword '{key_pass}'
+                v1SigningEnabled true
+                v2SigningEnabled true
             }}
         }}
     """
     content = content.replace("buildTypes {", signing_block + "\n    buildTypes {")
     content = content.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
-    print("Configured signingConfigs.release successfully.")
+    print("Configured signingConfigs.release with V1 and V2 Signing successfully.")
 
-# 4. Cấu hình lọc riêng kiến trúc arm64-v8a trong defaultConfig
-if "abiFilters \"arm64-v8a\"" not in content:
+# 4. Hỗ trợ cả 32-bit (Galaxy A10) và 64-bit (Tecno Spark 20): armeabi-v7a + arm64-v8a
+if "abiFilters" not in content:
     abi_filter = """
         ndk {
-            abiFilters "arm64-v8a"
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
+        resConfigs "vi", "en"
     """
     content = content.replace("defaultConfig {", "defaultConfig {\n" + abi_filter)
-    print("Configured arm64-v8a NDK filter.")
+    print("Configured armeabi-v7a and arm64-v8a NDK filters (100% Android phones supported).")
 
-# 5. Tắt Android Lint Vital Check khi build release
+# 5. Tối ưu packagingOptions: giữ useLegacyPackaging false để tương thích chuẩn Android, loại bỏ debug symbols
+target_legacy = "useLegacyPackaging enableLegacyPackaging.toBoolean()"
+if target_legacy in content:
+    replacement_packaging = """useLegacyPackaging false
+            keepDebugSymbols = []
+        }
+        resources {
+            excludes += [
+                "META-INF/*.version",
+                "META-INF/*.txt",
+                "META-INF/DEPENDENCIES",
+                "META-INF/NOTICE",
+                "META-INF/LICENSE*",
+                "META-INF/*.kotlin_module",
+                "**/libjscexecutor.so"
+            ]"""
+    content = content.replace(target_legacy, replacement_packaging)
+    print("Optimized packagingOptions: compatible packaging and stripped metadata.")
+
+# 6. Tắt Android Lint Vital Check khi build release
 if "lintOptions {" not in content:
     lint_bypass = """
     lintOptions {
@@ -71,35 +93,34 @@ if "lintOptions {" not in content:
 with open(build_gradle_path, "w", encoding="utf-8") as f:
     f.write(content)
 
-# 6. SIÊU TỐI ƯU HÓA DUNG LƯỢNG TRONG GRADLE.PROPERTIES (Ép từ 108MB xuống ~20-25MB)
+# 7. CẤU HÌNH GRADLE.PROPERTIES
 if os.path.exists(gradle_properties_path):
     with open(gradle_properties_path, "r", encoding="utf-8") as f:
         props = f.read()
 
-    # (A) Chỉ build duy nhất kiến trúc arm64-v8a (Loại bỏ armeabi-v7a, x86, x86_64 -> Giảm ngay ~75MB!)
-    props = re.sub(r"reactNativeArchitectures=.*", "reactNativeArchitectures=arm64-v8a", props)
+    # (A) Hỗ trợ cả 32-bit (armeabi-v7a) và 64-bit (arm64-v8a), loại bỏ 2 kiến trúc giả lập PC
+    props = re.sub(r"reactNativeArchitectures=.*", "reactNativeArchitectures=armeabi-v7a,arm64-v8a", props)
 
-    # (B) Nén thư viện native .so bằng ZIP DEFLATE (Giảm thêm ~15-20MB!)
-    props = re.sub(r"expo\.useLegacyPackaging=.*", "expo.useLegacyPackaging=true", props)
+    # (B) useLegacyPackaging=false để không bị lỗi Package Invalid trên Android 9/10/11+
+    props = re.sub(r"expo\.useLegacyPackaging=.*", "expo.useLegacyPackaging=false", props)
 
-    # (C) Tắt GIF native decoder thừa (tiết kiệm ~2MB)
+    # (C) Tắt GIF native decoder thừa
     props = re.sub(r"expo\.gif\.enabled=.*", "expo.gif.enabled=false", props)
 
-    # (D) Bật Resource Shrinking (Dọn dẹp layout/drawable/string không dùng trong thư viện)
+    # (D) Bật Resource Shrinking & R8 Minify
     if "android.enableShrinkResourcesInReleaseBuilds=" in props:
         props = re.sub(r"android\.enableShrinkResourcesInReleaseBuilds=.*", "android.enableShrinkResourcesInReleaseBuilds=true", props)
     else:
         props += "\nandroid.enableShrinkResourcesInReleaseBuilds=true\n"
 
-    # (E) Bật R8 Minify & AAPT2 PNG Crunch
     if "android.enableMinifyInReleaseBuilds=" in props:
         props = re.sub(r"android\.enableMinifyInReleaseBuilds=.*", "android.enableMinifyInReleaseBuilds=true", props)
     else:
         props += "\nandroid.enableMinifyInReleaseBuilds=true\n"
 
-    # (F) Cấu hình tăng tốc Gradle build song song & RAM
+    # (E) Tăng tốc Gradle build song song & RAM
     optimizations = """
-# CI/CD Performance & Size Flags
+# CI/CD Performance Flags
 org.gradle.parallel=true
 org.gradle.caching=true
 org.gradle.jvmargs=-Xmx4608m -XX:MaxMetaspaceSize=1024m -XX:+UseParallelGC -Dfile.encoding=UTF-8
@@ -109,6 +130,6 @@ android.enablePngCrunchInReleaseBuilds=true
 
     with open(gradle_properties_path, "w", encoding="utf-8") as f:
         f.write(props)
-    print("Configured gradle.properties: arm64-v8a only, legacyPackaging compression, shrinkResources, PNG crunch!")
+    print("Configured gradle.properties for 100% Android device compatibility!")
 
-print("Successfully configured Staging Gradle for minimal size and maximum speed!")
+print("Successfully configured Staging Gradle!")

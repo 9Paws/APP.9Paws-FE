@@ -39,7 +39,8 @@
       "@react-native-google-signin/google-signin",
       "expo-image",
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      "./plugins/withAndroidOptimizations.js"
     ],
     "experiments": {
       "typedRoutes": true,
