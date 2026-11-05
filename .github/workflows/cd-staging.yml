@@ -114,7 +114,8 @@ jobs:
 
                   echo "PR Title: $PR_TITLE"
 
-                  # Dùng Python script xử lý an toàn tuyệt đối qua environment variables
+                  # Cài đặt markdown và render HTML chuyên nghiệp cho email
+                  python3 -m pip install markdown
                   python3 .github/scripts/prepare-staging-email.py
 
             # ------------------------------------------------------------------------
@@ -130,5 +131,5 @@ jobs:
                   password: ${{ secrets.MAIL_PASSWORD }}
                   subject: "🐾 [9Paws Staging] Phiên bản thử nghiệm #${{ github.run_number }} sẵn sàng"
                   to: ${{ secrets.TESTER_EMAILS }}
-                  from: "9Paws CI/CD <${{ secrets.MAIL_USERNAME }}>"
+                  from: "9Paws Team <${{ secrets.MAIL_USERNAME }}>"
                   html_body: file://email-ready.html
