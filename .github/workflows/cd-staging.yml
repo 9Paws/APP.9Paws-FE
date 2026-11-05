@@ -101,15 +101,25 @@ jobs:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   TAG_NAME="staging-latest"
-                  # Xóa bản release và tag cũ nếu có để không tích lũy nhiều tag trên repo
-                  gh release delete "$TAG_NAME" --yes || true
-                  git push --delete origin "$TAG_NAME" || true
+                  # 1. Xóa release cũ trên GitHub kèm tag từ xa
+                  gh release delete "$TAG_NAME" --yes --cleanup-tag || true
 
-                  # Tạo duy nhất bản Pre-release 'staging-latest' chứa tệp APK tải trực tiếp
+                  # 2. Đảm bảo xóa tag từ xa trên origin nếu còn sót lại
+                  git push origin ":refs/tags/$TAG_NAME" 2>/dev/null || true
+
+                  # 3. Xóa tag cục bộ trên máy runner để tránh lỗi gh CLI
+                  git tag -d "$TAG_NAME" 2>/dev/null || true
+
+                  # Nghỉ 2 giây để GitHub API cập nhật trạng thái
+                  sleep 2
+
+                  # 4. Tạo duy nhất bản Pre-release 'staging-latest' trỏ thẳng vào commit SHA hiện tại
                   gh release create "$TAG_NAME" ./9Paws-Staging.apk \
+                    --target "${{ github.sha }}" \
                     --title "🐾 9Paws Staging (Bản mới nhất)" \
                     --notes "Bản thử nghiệm Staging tự động cập nhật từ commit ${{ github.sha }} trên nhánh main." \
-                    --prerelease
+                    --prerelease \
+                    --clobber
 
                   DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/9Paws-Staging.apk"
                   echo "DOWNLOAD_URL=$DOWNLOAD_URL" >> $GITHUB_ENV
