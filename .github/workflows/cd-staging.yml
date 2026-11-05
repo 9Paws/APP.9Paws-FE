@@ -93,12 +93,35 @@ jobs:
                   retention-days: 14
 
             # ------------------------------------------------------------------------
+            # CẬP NHẬT DUY NHẤT 1 BẢN PRE-RELEASE 'staging-latest' (LINK TẢI TRỰC TIẾP TỰ ĐỘNG)
+            # Không tạo nhiều tag mới; ghi đè bản staging-latest để đảm bảo link tải APK trực tiếp
+            # ------------------------------------------------------------------------
+            - name: Publish Rolling Staging APK
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  TAG_NAME="staging-latest"
+                  # Xóa bản release và tag cũ nếu có để không tích lũy nhiều tag trên repo
+                  gh release delete "$TAG_NAME" --yes || true
+                  git push --delete origin "$TAG_NAME" || true
+
+                  # Tạo duy nhất bản Pre-release 'staging-latest' chứa tệp APK tải trực tiếp
+                  gh release create "$TAG_NAME" ./9Paws-Staging.apk \
+                    --title "🐾 9Paws Staging (Bản mới nhất)" \
+                    --notes "Bản thử nghiệm Staging tự động cập nhật từ commit ${{ github.sha }} trên nhánh main." \
+                    --prerelease
+
+                  DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/9Paws-Staging.apk"
+                  echo "DOWNLOAD_URL=$DOWNLOAD_URL" >> $GITHUB_ENV
+                  echo "Direct APK download URL: $DOWNLOAD_URL"
+
+            # ------------------------------------------------------------------------
             # LẤY TITLE & DESCRIPTION CỦA PR VỪA MERGE VÀO MAIN & CHUẨN BỊ EMAIL
             # ------------------------------------------------------------------------
             - name: Fetch PR Details & Prepare Email
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  DOWNLOAD_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  DOWNLOAD_URL: ${{ env.DOWNLOAD_URL }}
                   REPOSITORY: ${{ github.repository }}
                   RUN_ID: ${{ github.run_id }}
                   RUN_NUMBER: ${{ github.run_number }}
@@ -121,7 +144,7 @@ jobs:
                   python3 .github/scripts/prepare-staging-email.py
 
             # ------------------------------------------------------------------------
-            # GỬI EMAIL THÔNG BÁO CHO TESTERS (KÈM LINK TẢI ARTIFACT TRÊN GITHUB ACTIONS)
+            # GỬI EMAIL THÔNG BÁO CHO TESTERS (KÈM LINK TẢI TRỰC TIẾP & QR CODE TỰ ĐỘNG TẢI)
             # ------------------------------------------------------------------------
             - name: Send Email with Download Link to Testers
               uses: dawidd6/action-send-mail@v3
