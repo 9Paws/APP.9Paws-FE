@@ -124,10 +124,14 @@ jobs:
         name: Create GitHub Release & Email Clients
         needs: [prepare-and-version-release, build-production-eas]
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
         steps:
             # 1. Tạo bản Release chính thức trên GitHub Releases
             - name: Create GitHub Release
-              uses: softprops/action-gh-release@v1
+              uses: softprops/action-gh-release@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tag_name: "v${{ needs.prepare-and-version-release.outputs.new_version }}"
                   name: "Phiên bản Release v${{ needs.prepare-and-version-release.outputs.new_version }}"
