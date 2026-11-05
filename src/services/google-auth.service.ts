@@ -64,20 +64,51 @@ export const googleAuthService = {
             );
         }
 
-        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-        const response = await GoogleSignin.signIn();
-
-        // SDK v13+ cấu trúc token nằm trong response.data.idToken
-        const idToken = response.data?.idToken ?? (response as any).idToken;
-
-        if (!idToken) {
-            throw new Error('GOOGLE_TOKEN_NOT_FOUND: Không nhận được Google ID Token từ hệ thống.');
+        const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+        if (!webClientId || webClientId.includes('your-google-web-client-id')) {
+            throw new Error(
+                'Chưa cấu hình Web Client ID (EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID). Vui lòng thêm secret này vào GitHub Actions Secrets.'
+            );
         }
 
-        return {
-            idToken,
-            user: response.data?.user ?? (response as any).user,
-        };
+        // Tự động re-configure trước khi gọi signIn để đảm bảo webClientId luôn được nạp đầy đủ
+        try {
+            GoogleSignin.configure({
+                webClientId,
+                offlineAccess: true,
+                scopes: ['profile', 'email'],
+            });
+        } catch (confErr) {
+            console.warn('[GoogleAuthService] configure in signIn failed:', confErr);
+        }
+
+        try {
+            await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+            const response = await GoogleSignin.signIn();
+
+            // SDK v13+ cấu trúc token nằm trong response.data.idToken
+            const idToken = response.data?.idToken ?? (response as any).idToken;
+
+            if (!idToken) {
+                throw new Error('GOOGLE_TOKEN_NOT_FOUND: Không nhận được Google ID Token từ hệ thống.');
+            }
+
+            return {
+                idToken,
+                user: response.data?.user ?? (response as any).user,
+            };
+        } catch (error: any) {
+            if (
+                error?.code === '10' ||
+                error?.code === 'DEVELOPER_ERROR' ||
+                error?.message?.includes('DEVELOPER_ERROR')
+            ) {
+                throw new Error(
+                    'DEVELOPER_ERROR (Mã 10): Mã chứng chỉ SHA-1 của Keystore chưa được đăng ký trong Google Cloud Console (OAuth Client ID loại Android với package com.ninepaws.app).'
+                );
+            }
+            throw error;
+        }
     },
 
     // 4. Đăng xuất phiên Google hiện tại
