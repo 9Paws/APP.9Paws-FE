@@ -1,25 +1,23 @@
 const { withGradleProperties, withAppBuildGradle } = require('@expo/config-plugins');
 
 /**
- * Expo Config Plugin siêu tối ưu hóa dung lượng APK và tốc độ biên dịch Android
- * Tự động áp dụng cho cả EAS Cloud Build (nhánh releases) và GitHub Actions (nhánh main)
+ * Expo Config Plugin tối ưu hóa kích thước APK và đảm bảo tương thích 100% thiết bị Android
+ * Hỗ trợ cả máy 32-bit (Galaxy A10) và máy 64-bit (Tecno Spark 20, Pixel, Samsung S-series)
  */
 const withAndroidOptimizations = (config) => {
-  // 1. Tối ưu các cờ hiệu năng và dung lượng trong gradle.properties
+  // 1. Tối ưu các cờ hiệu năng trong gradle.properties
   config = withGradleProperties(config, (config) => {
     const properties = [
-      // Chỉ biên dịch kiến trúc 64-bit hiện đại (arm64-v8a), giảm 75% file C++ native
-      { type: 'property', key: 'reactNativeArchitectures', value: 'arm64-v8a' },
-      // Nén toàn bộ thư viện .so native bên trong APK bằng ZIP DEFLATE
-      { type: 'property', key: 'expo.useLegacyPackaging', value: 'true' },
+      // Hỗ trợ cả 32-bit (armeabi-v7a) và 64-bit (arm64-v8a), loại bỏ 2 kiến trúc giả lập PC (x86, x86_64)
+      { type: 'property', key: 'reactNativeArchitectures', value: 'armeabi-v7a,arm64-v8a' },
+      // Giữ useLegacyPackaging=false để tương thích chuẩn Android 9/10/11/12/13/14 (tránh lỗi invalid package)
+      { type: 'property', key: 'expo.useLegacyPackaging', value: 'false' },
       // Tắt bộ giải mã GIF gốc của React Native (app dùng expo-image tối ưu hơn)
       { type: 'property', key: 'expo.gif.enabled', value: 'false' },
       // Kích hoạt dọn dẹp tài nguyên thừa (XML, drawables không dùng)
       { type: 'property', key: 'android.enableShrinkResourcesInReleaseBuilds', value: 'true' },
       // Kích hoạt thu nhỏ mã bytecode (Minify/Obfuscation)
       { type: 'property', key: 'android.enableMinifyInReleaseBuilds', value: 'true' },
-      // Kích hoạt R8 Full Mode (chế độ nén và inlining hàm mạnh nhất của Google)
-      { type: 'property', key: 'android.enableR8.fullMode', value: 'true' },
       // Nén ảnh PNG qua AAPT2
       { type: 'property', key: 'android.enablePngCrunchInReleaseBuilds', value: 'true' },
       // Tăng tốc biên dịch song song và cấp 4.5GB RAM cho Gradle JVM
@@ -40,7 +38,7 @@ const withAndroidOptimizations = (config) => {
     return config;
   });
 
-  // 2. Tối ưu app/build.gradle: resConfigs và packagingOptions
+  // 2. Tối ưu app/build.gradle: resConfigs, V1/V2 signing, packagingOptions
   config = withAppBuildGradle(config, (config) => {
     let content = config.modResults.contents;
 
@@ -55,7 +53,7 @@ const withAndroidOptimizations = (config) => {
     // Tối ưu packagingOptions: loại bỏ debug symbols và các metadata thừa
     const targetLegacy = 'useLegacyPackaging enableLegacyPackaging.toBoolean()';
     if (content.includes(targetLegacy)) {
-      const replacementPackaging = `useLegacyPackaging true
+      const replacementPackaging = `useLegacyPackaging false
             keepDebugSymbols = []
         }
         resources {
