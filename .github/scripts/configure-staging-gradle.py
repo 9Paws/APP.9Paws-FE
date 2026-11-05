@@ -9,7 +9,7 @@ if hasattr(sys.stdout, "reconfigure"):
 build_gradle_path = "android/app/build.gradle"
 gradle_properties_path = "android/gradle.properties"
 
-print("🔍 Đang cấu hình siêu tối ưu hóa dung lượng và tốc độ cho Staging APK...")
+print("🔍 Đang cấu hình siêu tối ưu hóa dung lượng tối thiểu cho Staging APK...")
 
 # 1. Kiểm tra an toàn: Đảm bảo file build.gradle tồn tại
 if not os.path.exists(build_gradle_path):
@@ -47,17 +47,37 @@ else:
     content = content.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
     print("Configured signingConfigs.release successfully.")
 
-# 4. Cấu hình lọc riêng kiến trúc arm64-v8a trong defaultConfig
+# 4. Cấu hình lọc riêng kiến trúc arm64-v8a và giới hạn ngôn ngữ (resConfigs vi, en) trong defaultConfig
 if "abiFilters \"arm64-v8a\"" not in content:
     abi_filter = """
         ndk {
             abiFilters "arm64-v8a"
         }
+        resConfigs "vi", "en"
     """
     content = content.replace("defaultConfig {", "defaultConfig {\n" + abi_filter)
-    print("Configured arm64-v8a NDK filter.")
+    print("Configured arm64-v8a NDK filter and stripped unused 80+ language resources (resConfigs).")
 
-# 5. Tắt Android Lint Vital Check khi build release
+# 5. Tối ưu sâu packagingOptions: Nén thư viện native, loại bỏ debug symbols và file rác META-INF
+target_legacy = "useLegacyPackaging enableLegacyPackaging.toBoolean()"
+if target_legacy in content:
+    replacement_packaging = """useLegacyPackaging true
+            keepDebugSymbols = []
+        }
+        resources {
+            excludes += [
+                "META-INF/*.version",
+                "META-INF/*.txt",
+                "META-INF/DEPENDENCIES",
+                "META-INF/NOTICE",
+                "META-INF/LICENSE*",
+                "META-INF/*.kotlin_module",
+                "**/libjscexecutor.so"
+            ]"""
+    content = content.replace(target_legacy, replacement_packaging)
+    print("Optimized packagingOptions: stripped debug symbols and unused metadata.")
+
+# 6. Tắt Android Lint Vital Check khi build release
 if "lintOptions {" not in content:
     lint_bypass = """
     lintOptions {
@@ -71,35 +91,40 @@ if "lintOptions {" not in content:
 with open(build_gradle_path, "w", encoding="utf-8") as f:
     f.write(content)
 
-# 6. SIÊU TỐI ƯU HÓA DUNG LƯỢNG TRONG GRADLE.PROPERTIES (Ép từ 108MB xuống ~20-25MB)
+# 7. SIÊU TỐI ƯU HÓA DUNG LƯỢNG TRONG GRADLE.PROPERTIES (Mục tiêu: ~15MB - 18MB)
 if os.path.exists(gradle_properties_path):
     with open(gradle_properties_path, "r", encoding="utf-8") as f:
         props = f.read()
 
-    # (A) Chỉ build duy nhất kiến trúc arm64-v8a (Loại bỏ armeabi-v7a, x86, x86_64 -> Giảm ngay ~75MB!)
+    # (A) Chỉ build duy nhất kiến trúc arm64-v8a (Loại bỏ armeabi-v7a, x86, x86_64 -> Giảm ~75MB!)
     props = re.sub(r"reactNativeArchitectures=.*", "reactNativeArchitectures=arm64-v8a", props)
 
-    # (B) Nén thư viện native .so bằng ZIP DEFLATE (Giảm thêm ~15-20MB!)
+    # (B) Nén thư viện native .so bằng ZIP DEFLATE (Giảm ~15-20MB!)
     props = re.sub(r"expo\.useLegacyPackaging=.*", "expo.useLegacyPackaging=true", props)
 
     # (C) Tắt GIF native decoder thừa (tiết kiệm ~2MB)
     props = re.sub(r"expo\.gif\.enabled=.*", "expo.gif.enabled=false", props)
 
-    # (D) Bật Resource Shrinking (Dọn dẹp layout/drawable/string không dùng trong thư viện)
+    # (D) Bật Resource Shrinking & R8 Minify Full Mode (Dọn dẹp triệt để mã máy và tài nguyên thừa)
     if "android.enableShrinkResourcesInReleaseBuilds=" in props:
         props = re.sub(r"android\.enableShrinkResourcesInReleaseBuilds=.*", "android.enableShrinkResourcesInReleaseBuilds=true", props)
     else:
         props += "\nandroid.enableShrinkResourcesInReleaseBuilds=true\n"
 
-    # (E) Bật R8 Minify & AAPT2 PNG Crunch
     if "android.enableMinifyInReleaseBuilds=" in props:
         props = re.sub(r"android\.enableMinifyInReleaseBuilds=.*", "android.enableMinifyInReleaseBuilds=true", props)
     else:
         props += "\nandroid.enableMinifyInReleaseBuilds=true\n"
 
+    # (E) Kích hoạt R8 Full Mode để tối ưu hóa bytecode Java/Kotlin tối đa
+    if "android.enableR8.fullMode=" in props:
+        props = re.sub(r"android\.enableR8\.fullMode=.*", "android.enableR8.fullMode=true", props)
+    else:
+        props += "\nandroid.enableR8.fullMode=true\n"
+
     # (F) Cấu hình tăng tốc Gradle build song song & RAM
     optimizations = """
-# CI/CD Performance & Size Flags
+# CI/CD Extreme Performance & Size Flags
 org.gradle.parallel=true
 org.gradle.caching=true
 org.gradle.jvmargs=-Xmx4608m -XX:MaxMetaspaceSize=1024m -XX:+UseParallelGC -Dfile.encoding=UTF-8
@@ -109,6 +134,6 @@ android.enablePngCrunchInReleaseBuilds=true
 
     with open(gradle_properties_path, "w", encoding="utf-8") as f:
         f.write(props)
-    print("Configured gradle.properties: arm64-v8a only, legacyPackaging compression, shrinkResources, PNG crunch!")
+    print("Configured gradle.properties: arm64-v8a only, R8 Full Mode, Resource Shrinker, PNG crunch!")
 
-print("Successfully configured Staging Gradle for minimal size and maximum speed!")
+print("Successfully configured Staging Gradle for absolute minimum APK size!")
