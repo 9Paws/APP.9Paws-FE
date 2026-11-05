@@ -3,7 +3,7 @@ import axios, { create, InternalAxiosRequestConfig } from 'axios';
 import { STORAGE_KEYS } from './constants';
 import { getItem, removeItem, setItem } from './secure-storage';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/+$/, '');
 
 export const api = create({
     baseURL: BASE_URL,
@@ -51,6 +51,17 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+
+        // Log chi tiết lỗi mạng khi gặp sự cố để dễ theo dõi trong quá trình kiểm thử
+        if (error.response) {
+            console.warn(
+                `[API Error] ${originalRequest?.method?.toUpperCase()} ${originalRequest?.url} -> Status ${error.response.status}`
+            );
+        } else if (error.request) {
+            console.warn(
+                `[API Network Error] Không thể kết nối tới máy chủ API: ${error.message}`
+            );
+        }
 
         // Chỉ kích hoạt khi bị 401 và không phải là request refresh hay login
         if (
