@@ -18,6 +18,10 @@ const withAndroidOptimizations = (config) => {
       { type: 'property', key: 'android.enableShrinkResourcesInReleaseBuilds', value: 'true' },
       // Kích hoạt thu nhỏ mã bytecode (Minify/Obfuscation)
       { type: 'property', key: 'android.enableMinifyInReleaseBuilds', value: 'true' },
+      // Bật R8 Full Mode để tối ưu tree-shaking và loại bỏ dead code tối đa
+      { type: 'property', key: 'android.enableR8.fullMode', value: 'true' },
+      // Bật AAPT2 resource optimizations
+      { type: 'property', key: 'android.enableResourceOptimizations', value: 'true' },
       // Nén ảnh PNG qua AAPT2
       { type: 'property', key: 'android.enablePngCrunchInReleaseBuilds', value: 'true' },
       // Tăng tốc biên dịch song song và cấp 4.5GB RAM cho Gradle JVM
@@ -50,6 +54,14 @@ const withAndroidOptimizations = (config) => {
       );
     }
 
+    // Chuyển sang proguard-android-optimize.txt để kích hoạt bytecode optimizations
+    if (content.includes('getDefaultProguardFile("proguard-android.txt")')) {
+      content = content.replace(
+        'getDefaultProguardFile("proguard-android.txt")',
+        'getDefaultProguardFile("proguard-android-optimize.txt")'
+      );
+    }
+
     // Tối ưu packagingOptions: loại bỏ debug symbols và các metadata thừa
     const targetLegacy = 'useLegacyPackaging enableLegacyPackaging.toBoolean()';
     if (content.includes(targetLegacy)) {
@@ -61,10 +73,14 @@ const withAndroidOptimizations = (config) => {
                 "META-INF/*.version",
                 "META-INF/*.txt",
                 "META-INF/DEPENDENCIES",
-                "META-INF/NOTICE",
+                "META-INF/NOTICE*",
                 "META-INF/LICENSE*",
+                "META-INF/license.txt",
+                "META-INF/notice.txt",
                 "META-INF/*.kotlin_module",
-                "**/libjscexecutor.so"
+                "**/libjscexecutor.so",
+                "**/libjsc.so",
+                "**/README.txt"
             ]`;
       content = content.replace(targetLegacy, replacementPackaging);
     }

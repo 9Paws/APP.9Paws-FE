@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import subprocess
 
 # Đảm bảo mã hóa UTF-8 cho stdout trên mọi hệ điều hành
 if hasattr(sys.stdout, "reconfigure"):
@@ -71,13 +72,22 @@ if target_legacy in content:
                 "META-INF/*.version",
                 "META-INF/*.txt",
                 "META-INF/DEPENDENCIES",
-                "META-INF/NOTICE",
+                "META-INF/NOTICE*",
                 "META-INF/LICENSE*",
+                "META-INF/license.txt",
+                "META-INF/notice.txt",
                 "META-INF/*.kotlin_module",
-                "**/libjscexecutor.so"
+                "**/libjscexecutor.so",
+                "**/libjsc.so",
+                "**/README.txt"
             ]"""
     content = content.replace(target_legacy, replacement_packaging)
     print("Optimized packagingOptions: compatible packaging and stripped metadata.")
+
+# Kích hoạt bytecode optimization với proguard-android-optimize.txt
+if 'getDefaultProguardFile("proguard-android.txt")' in content:
+    content = content.replace('getDefaultProguardFile("proguard-android.txt")', 'getDefaultProguardFile("proguard-android-optimize.txt")')
+    print("Enabled bytecode optimization via proguard-android-optimize.txt.")
 
 # 6. Tắt Android Lint Vital Check khi build release
 if "lintOptions {" not in content:
@@ -118,18 +128,40 @@ if os.path.exists(gradle_properties_path):
     else:
         props += "\nandroid.enableMinifyInReleaseBuilds=true\n"
 
-    # (E) Tăng tốc Gradle build song song & RAM
+    # (E) Tăng tốc Gradle build song song & RAM và R8 Full Mode
     optimizations = """
-# CI/CD Performance Flags
+# CI/CD Performance Flags & Extreme APK Shrinking
 org.gradle.parallel=true
 org.gradle.caching=true
 org.gradle.jvmargs=-Xmx4608m -XX:MaxMetaspaceSize=1024m -XX:+UseParallelGC -Dfile.encoding=UTF-8
 android.enablePngCrunchInReleaseBuilds=true
+android.enableR8.fullMode=true
+android.enableResourceOptimizations=true
 """
     props += optimizations
 
     with open(gradle_properties_path, "w", encoding="utf-8") as f:
         f.write(props)
     print("Configured gradle.properties for 100% Android device compatibility!")
+
+# In mã SHA-1/SHA-256 fingerprint của release.keystore để cấu hình Google Sign-In trên Google Cloud Console
+keystore_path = "android/app/release.keystore"
+if os.path.exists(keystore_path):
+    try:
+        res = subprocess.run(
+            ["keytool", "-list", "-v", "-keystore", keystore_path, "-alias", key_alias, "-storepass", store_pass],
+            capture_output=True,
+            text=True
+        )
+        print("\n" + "="*80)
+        print("🔑 CERTIFICATE FINGERPRINTS (GOOGLE SIGN-IN OAUTH CREDENTIALS):")
+        for line in res.stdout.splitlines():
+            if "SHA1:" in line or "SHA256:" in line:
+                print("   " + line.strip())
+        print("👉 Hướng dẫn: Thêm mã SHA-1 ở trên vào Google Cloud Console -> Credentials")
+        print("   -> OAuth 2.0 Client ID loại Android với package 'com.ninepaws.app'")
+        print("="*80 + "\n")
+    except Exception as e:
+        print(f"Could not read keystore fingerprints: {e}")
 
 print("Successfully configured Staging Gradle!")

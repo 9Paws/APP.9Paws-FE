@@ -51,3 +51,4 @@ example
 __pycache__/
 *.pyc
 *.pyo
+.idea/
