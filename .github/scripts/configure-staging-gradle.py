@@ -72,13 +72,22 @@ if target_legacy in content:
                 "META-INF/*.version",
                 "META-INF/*.txt",
                 "META-INF/DEPENDENCIES",
-                "META-INF/NOTICE",
+                "META-INF/NOTICE*",
                 "META-INF/LICENSE*",
+                "META-INF/license.txt",
+                "META-INF/notice.txt",
                 "META-INF/*.kotlin_module",
-                "**/libjscexecutor.so"
+                "**/libjscexecutor.so",
+                "**/libjsc.so",
+                "**/README.txt"
             ]"""
     content = content.replace(target_legacy, replacement_packaging)
     print("Optimized packagingOptions: compatible packaging and stripped metadata.")
+
+# Kích hoạt bytecode optimization với proguard-android-optimize.txt
+if 'getDefaultProguardFile("proguard-android.txt")' in content:
+    content = content.replace('getDefaultProguardFile("proguard-android.txt")', 'getDefaultProguardFile("proguard-android-optimize.txt")')
+    print("Enabled bytecode optimization via proguard-android-optimize.txt.")
 
 # 6. Tắt Android Lint Vital Check khi build release
 if "lintOptions {" not in content:
@@ -119,13 +128,15 @@ if os.path.exists(gradle_properties_path):
     else:
         props += "\nandroid.enableMinifyInReleaseBuilds=true\n"
 
-    # (E) Tăng tốc Gradle build song song & RAM
+    # (E) Tăng tốc Gradle build song song & RAM và R8 Full Mode
     optimizations = """
-# CI/CD Performance Flags
+# CI/CD Performance Flags & Extreme APK Shrinking
 org.gradle.parallel=true
 org.gradle.caching=true
 org.gradle.jvmargs=-Xmx4608m -XX:MaxMetaspaceSize=1024m -XX:+UseParallelGC -Dfile.encoding=UTF-8
 android.enablePngCrunchInReleaseBuilds=true
+android.enableR8.fullMode=true
+android.enableResourceOptimizations=true
 """
     props += optimizations
 
