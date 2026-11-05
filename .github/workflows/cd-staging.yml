@@ -17,6 +17,19 @@ jobs:
               with:
                   fetch-depth: 0 # Kéo toàn bộ lịch sử commit để đọc thông tin PR
 
+            - name: Inject Environment Variables from Secrets
+              run: |
+                  touch .env
+                  if [ -n "${{ secrets.EXPO_PUBLIC_API_BASE_URL }}" ]; then
+                    echo "EXPO_PUBLIC_API_BASE_URL=${{ secrets.EXPO_PUBLIC_API_BASE_URL }}" >> .env
+                    echo "EXPO_PUBLIC_API_BASE_URL=${{ secrets.EXPO_PUBLIC_API_BASE_URL }}" >> $GITHUB_ENV
+                  fi
+                  if [ -n "${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}" ]; then
+                    echo "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}" >> .env
+                    echo "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}" >> $GITHUB_ENV
+                  fi
+                  echo "Successfully injected environment variables from repository secrets into .env"
+
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
@@ -38,6 +51,9 @@ jobs:
                   java-version: "17"
 
             - name: Generate Android Native Project (Fast Prebuild)
+              env:
+                  EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
+                  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
               run: npx expo prebuild --platform android --clean --no-install
 
             - name: Setup Gradle Build Cache
@@ -55,6 +71,9 @@ jobs:
               run: python3 .github/scripts/configure-staging-gradle.py
 
             - name: Build APK via Parallel Gradle
+              env:
+                  EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
+                  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
               run: |
                   cd android
                   chmod +x gradlew
@@ -74,29 +93,12 @@ jobs:
                   retention-days: 14
 
             # ------------------------------------------------------------------------
-            # PHÁT HÀNH BẢN STAGING PRE-RELEASE TRÊN GITHUB & TẠO LINK TẢI TRỰC TIẾP
-            # ------------------------------------------------------------------------
-            - name: Publish Staging Pre-Release
-              env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                  TAG_NAME="staging-build-${{ github.run_number }}"
-                  gh release create "$TAG_NAME" ./9Paws-Staging.apk \
-                    --title "🐾 9Paws Staging Build #${{ github.run_number }}" \
-                    --notes "Bản thử nghiệm Staging tự động biên dịch từ nhánh main (commit: ${{ github.sha }})." \
-                    --prerelease || gh release upload "$TAG_NAME" ./9Paws-Staging.apk --clobber
-
-                  DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/9Paws-Staging.apk"
-                  echo "DOWNLOAD_URL=$DOWNLOAD_URL" >> $GITHUB_ENV
-                  echo "Staging APK direct download URL: $DOWNLOAD_URL"
-
-            # ------------------------------------------------------------------------
-            # LẤY TITLE & DESCRIPTION CỦA PR VỪA MERGE VÀO MAIN
+            # LẤY TITLE & DESCRIPTION CỦA PR VỪA MERGE VÀO MAIN & CHUẨN BỊ EMAIL
             # ------------------------------------------------------------------------
             - name: Fetch PR Details & Prepare Email
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  DOWNLOAD_URL: ${{ env.DOWNLOAD_URL }}
+                  DOWNLOAD_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   REPOSITORY: ${{ github.repository }}
                   RUN_ID: ${{ github.run_id }}
                   RUN_NUMBER: ${{ github.run_number }}
@@ -119,7 +121,7 @@ jobs:
                   python3 .github/scripts/prepare-staging-email.py
 
             # ------------------------------------------------------------------------
-            # GỬI EMAIL THÔNG BÁO CHO TESTERS (KÈM LINK TẢI TRỰC TIẾP & QR CODE)
+            # GỬI EMAIL THÔNG BÁO CHO TESTERS (KÈM LINK TẢI ARTIFACT TRÊN GITHUB ACTIONS)
             # ------------------------------------------------------------------------
             - name: Send Email with Download Link to Testers
               uses: dawidd6/action-send-mail@v3
