@@ -7,27 +7,10 @@ on:
 
 jobs:
     # ----------------------------------------------------------------------------
-    # JOB 1: KIỂM TRA CHẤT LƯỢNG CODE TRƯỚC KHI RELEASE
+    # JOB 1: KIỂM ĐỊNH CHẤT LƯỢNG & GEMINI AI TỰ ĐỘNG TĂNG VERSION + CHANGELOG
     # ----------------------------------------------------------------------------
-    verify-quality:
-        name: Verify Code Quality
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22
-                  cache: "npm"
-            - run: npm ci
-            - run: npm run lint
-            - run: npx tsc --noEmit
-
-    # ----------------------------------------------------------------------------
-    # JOB 2: GEMINI AI TỰ ĐỘNG TĂNG VERSION & TẠO CHANGELOG
-    # ----------------------------------------------------------------------------
-    bump-version-and-changelog:
-        name: AI Bump Version & Changelog
-        needs: verify-quality
+    prepare-and-version-release:
+        name: Quality Check & AI Version Bump
         runs-on: ubuntu-latest
         permissions:
             contents: write # Cần quyền để commit code và push tag lên repo
@@ -35,17 +18,31 @@ jobs:
             new_version: ${{ steps.ai_bump.outputs.new_version }}
             changelog: ${{ steps.ai_bump.outputs.changelog }}
         steps:
-            - name: Checkout code
+            - name: Checkout Code
               uses: actions/checkout@v4
               with:
                   fetch-depth: 0
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "npm"
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Verify Code Quality (Lint & Typecheck)
+              run: |
+                  npm run lint
+                  npx tsc --noEmit
 
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
                   python-version: "3.x"
 
-            # Chạy script AI tự động tăng version
+            # Chạy script AI tự động tăng version dựa theo Conventional Commits
             - name: Run AI Version Bump Script
               id: ai_bump
               env:
@@ -64,26 +61,20 @@ jobs:
                   git push origin releases --tags
 
     # ----------------------------------------------------------------------------
-    # JOB 3: BUILD PRODUCTION APK TRÊN EXPO EAS CLOUD
+    # JOB 2: BUILD PRODUCTION APK SIÊU NHẸ TRÊN EXPO EAS CLOUD
     # ----------------------------------------------------------------------------
     build-production-eas:
         name: Build Production on EAS Cloud
-        needs: bump-version-and-changelog
+        needs: prepare-and-version-release
         runs-on: ubuntu-latest
         outputs:
             download_url: ${{ steps.eas_build.outputs.download_url }}
         steps:
-            # Lấy code mới nhất đã có version vừa được cập nhật ở Job 2
-            - uses: actions/checkout@v4
+            # Lấy code mới nhất đã có version vừa được cập nhật ở Job 1
+            - name: Checkout Releases
+              uses: actions/checkout@v4
               with:
                   ref: releases
-
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22
-                  cache: "npm"
-
-            - run: npm ci
 
             - name: Set up EAS CLI
               uses: expo/expo-github-action@v8
@@ -91,7 +82,7 @@ jobs:
                   eas-version: latest
                   token: ${{ secrets.EXPO_TOKEN }}
 
-            # Build profile production trên EAS Cloud
+            # Build profile production trên EAS Cloud (áp dụng plugin withAndroidOptimizations)
             - name: Build Production APK via EAS
               id: eas_build
               run: |
@@ -100,33 +91,33 @@ jobs:
                   echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
 
     # ----------------------------------------------------------------------------
-    # JOB 4: TẠO GITHUB RELEASE CHÍNH THỨC & GỬI EMAIL CHO KHÁCH HÀNG
+    # JOB 3: TẠO GITHUB RELEASE CHÍNH THỨC & GỬI EMAIL BÀN GIAO CHO KHÁCH HÀNG
     # ----------------------------------------------------------------------------
     deliver-to-client:
         name: Create GitHub Release & Email Clients
-        needs: [bump-version-and-changelog, build-production-eas]
+        needs: [prepare-and-version-release, build-production-eas]
         runs-on: ubuntu-latest
         steps:
             # 1. Tạo bản Release chính thức trên GitHub Releases
             - name: Create GitHub Release
               uses: softprops/action-gh-release@v1
               with:
-                  tag_name: "v${{ needs.bump-version-and-changelog.outputs.new_version }}"
-                  name: "Phiên bản Release v${{ needs.bump-version-and-changelog.outputs.new_version }}"
+                  tag_name: "v${{ needs.prepare-and-version-release.outputs.new_version }}"
+                  name: "Phiên bản Release v${{ needs.prepare-and-version-release.outputs.new_version }}"
                   body: |
                       ### 🐾 9Paws Mobile App — Bản Phát Hành Chính Thức
                       **Ghi chú phát hành (Release Notes):**
-                      ${{ needs.bump-version-and-changelog.outputs.changelog }}
+                      ${{ needs.prepare-and-version-release.outputs.changelog }}
 
                       - 📲 **Đường dẫn tải APK trực tiếp:** [Tải tại đây](<${{ needs.build-production-eas.outputs.download_url }}>)
                   draft: false
                   prerelease: false
 
-            # 2. Điền thông tin vào mẫu Email an toàn tuyệt đối
+            # 2. Điền thông tin vào mẫu Email an toàn tuyệt đối (Render Markdown thành Rich HTML)
             - name: Prepare Release Email Content
               env:
-                  NEW_VERSION: ${{ needs.bump-version-and-changelog.outputs.new_version }}
-                  CHANGELOG: ${{ needs.bump-version-and-changelog.outputs.changelog }}
+                  NEW_VERSION: ${{ needs.prepare-and-version-release.outputs.new_version }}
+                  CHANGELOG: ${{ needs.prepare-and-version-release.outputs.changelog }}
                   DOWNLOAD_URL: ${{ needs.build-production-eas.outputs.download_url }}
               run: |
                   python3 -m pip install markdown
@@ -141,7 +132,7 @@ jobs:
                   secure: true
                   username: ${{ secrets.MAIL_USERNAME }}
                   password: ${{ secrets.MAIL_PASSWORD }}
-                  subject: "🎉 [9Paws] Bàn giao phiên bản ứng dụng chính thức v${{ needs.bump-version-and-changelog.outputs.new_version }}"
+                  subject: "🎉 [9Paws] Bàn giao phiên bản ứng dụng chính thức v${{ needs.prepare-and-version-release.outputs.new_version }}"
                   to: ${{ secrets.CLIENT_EMAILS }}
                   from: "9Paws Team <${{ secrets.MAIL_USERNAME }}>"
                   html_body: file://release-email-ready.html
