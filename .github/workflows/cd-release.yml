@@ -122,20 +122,13 @@ jobs:
                   draft: false
                   prerelease: false
 
-            # 2. Điền thông tin vào mẫu Email
+            # 2. Điền thông tin vào mẫu Email an toàn tuyệt đối
             - name: Prepare Release Email Content
-              run: |
-                  python3 -c "
-                  with open('.github/email-templates/release-email.html', 'r', encoding='utf-8') as f:
-                      html = f.read()
-
-                  html = html.replace('{{NEW_VERSION}}', '${{ needs.bump-version-and-changelog.outputs.new_version }}')
-                  html = html.replace('{{CHANGELOG}}', '''${{ needs.bump-version-and-changelog.outputs.changelog }}''')
-                  html = html.replace('{{DOWNLOAD_URL}}', '${{ needs.build-production-eas.outputs.download_url }}')
-
-                  with open('release-email-ready.html', 'w', encoding='utf-8') as f:
-                      f.write(html)
-                  "
+              env:
+                  NEW_VERSION: ${{ needs.bump-version-and-changelog.outputs.new_version }}
+                  CHANGELOG: ${{ needs.bump-version-and-changelog.outputs.changelog }}
+                  DOWNLOAD_URL: ${{ needs.build-production-eas.outputs.download_url }}
+              run: python3 .github/scripts/prepare-release-email.py
 
             # 3. Gửi email bàn giao trang trọng cho Khách hàng
             - name: Send Email to Clients
