@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { getPushPermissions, requestPushPermissions } from '@/services/notification.service';
+import { requestPushPermissions } from '@/services/notification.service';
 import {
   Bell,
   BellRing,
@@ -40,6 +40,7 @@ import {
 } from 'lucide-react-native';
 
 import { useAuthStore } from '@/stores/auth.store';
+import { useSettingsStore, WalletItem } from '@/stores/settings.store';
 import { useToastStore } from '@/stores/toast.store';
 import { authService } from '@/services/auth.service';
 import { userService } from '@/services/user.service';
@@ -110,13 +111,7 @@ function SettingRow({
   return content;
 }
 
-interface WalletItem {
-  id: string;
-  name: string;
-  type: 'bank' | 'wallet' | 'cash';
-  balance: number;
-  badge?: string;
-}
+// WalletItem imported from @/stores/settings.store
 
 interface CurrencyOption {
   code: string;
@@ -148,14 +143,23 @@ export default function ProfileScreen() {
 
   const [isProfileLoading, setIsProfileLoading] = useState(!user);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [wallets, setWallets] = useState<WalletItem[]>([]);
 
-  const [currentCurrency, setCurrentCurrency] = useState<string>('VND');
-  const [faceIdEnabled, setFaceIdEnabled] = useState(false);
-  const [isBiometricSupported, setIsBiometricSupported] = useState(true);
-  const [pushNotificationEnabled, setPushNotificationEnabled] = useState(false);
-  const [reminderEnabled, setReminderEnabled] = useState(false);
-  const [reminderTime, setReminderTime] = useState('21:00');
+  const {
+    isLoaded: isSettingsLoaded,
+    wallets,
+    currentCurrency,
+    faceIdEnabled,
+    isBiometricSupported,
+    pushNotificationEnabled,
+    reminderEnabled,
+    reminderTime,
+    loadSettings,
+    setFaceIdEnabled,
+    setPushNotificationEnabled,
+    setReminder,
+    setCurrentCurrency,
+    setWallets,
+  } = useSettingsStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
@@ -181,7 +185,10 @@ export default function ProfileScreen() {
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const res = await userService.getProfile();
+      const [res] = await Promise.all([
+        userService.getProfile(),
+        loadSettings(),
+      ]);
       if (res?.data) {
         const localAvatar = await getItem(STORAGE_KEYS.AVATAR);
         updateUser({
@@ -201,91 +208,18 @@ export default function ProfileScreen() {
     } finally {
       setIsRefreshing(false);
     }
-  }, [updateUser, user]);
+  }, [updateUser, user, setCurrentCurrency, loadSettings]);
 
   const fullName = user?.fullName || t('profile.defaultUserName');
   const email = user?.email || '';
   const firstName = fullName.split(' ').pop() || t('profile.defaultFirstName');
 
   useEffect(() => {
-    // Kiểm tra tính sẵn sàng của Face ID / Vân tay
-    const checkBiometrics = async () => {
-      try {
-        const hasHardware = await LocalAuthentication.hasHardwareAsync();
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        const supported = hasHardware && isEnrolled;
-        setIsBiometricSupported(supported);
 
-        if (!supported) {
-          setFaceIdEnabled(false);
-          await setItem(STORAGE_KEYS.BIOMETRIC_ENABLED, 'false');
-        } else {
-          const val = await getItem(STORAGE_KEYS.BIOMETRIC_ENABLED);
-          setFaceIdEnabled(val === 'true');
-        }
-      } catch {
-        setIsBiometricSupported(false);
-      }
-    };
 
-    // Kiểm tra trạng thái Push Notification
-    const checkPushStatus = async (): Promise<boolean> => {
-      try {
-        if (Platform.OS === 'web') {
-          const val = await getItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED);
-          const enabled = val === 'true';
-          setPushNotificationEnabled(enabled);
-          return enabled;
-        }
-        const granted = await getPushPermissions();
-        setPushNotificationEnabled(granted);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, granted ? 'true' : 'false');
-        return granted;
-      } catch {
-        setPushNotificationEnabled(false);
-        return false;
-      }
-    };
-
-    checkBiometrics();
-
-    getItem(STORAGE_KEYS.WALLETS).then((val) => {
-      if (val) {
-        try {
-          const parsed = JSON.parse(val);
-          if (Array.isArray(parsed)) {
-            setWallets(parsed);
-          }
-        } catch {
-          // Ignore parse error
-        }
-      }
-    });
-
-    getItem(STORAGE_KEYS.CURRENCY).then((val) => {
-      if (val) setCurrentCurrency(val);
-    });
-
-    // Nhắc nhở ghi chép chỉ được bật khi quyền thông báo đẩy đã được cấp.
-    // Đọc quyền push trước rồi mới áp dụng trạng thái nhắc nhở để tránh
-    // nhắc nhở tự bật lên khi người dùng chưa cho phép thông báo.
-    Promise.all([
-      checkPushStatus(),
-      getItem(STORAGE_KEYS.REMINDER_ENABLED),
-      getItem(STORAGE_KEYS.REMINDER_TIME),
-    ]).then(async ([pushEnabled, reminderVal, timeVal]) => {
-      const persistedReminder = reminderVal === 'true';
-      const shouldEnableReminder = persistedReminder && pushEnabled;
-
-      setReminderEnabled(shouldEnableReminder);
-
-      // Đồng bộ lại storage để trạng thái không bị "bật ma" sau khi app cập nhật
-      if (persistedReminder !== shouldEnableReminder) {
-        await setItem(STORAGE_KEYS.REMINDER_ENABLED, shouldEnableReminder ? 'true' : 'false');
-      }
-
-      if (timeVal) setReminderTime(timeVal);
-    });
+    if (!isSettingsLoaded) {
+      loadSettings();
+    }
 
     // Lấy thông tin người dùng mới nhất từ server
     userService.getProfile().then(async (res) => {
@@ -308,7 +242,7 @@ export default function ProfileScreen() {
       .finally(() => {
         setIsProfileLoading(false);
       });
-  }, [updateUser, user]);
+  }, [updateUser, user, isSettingsLoaded, loadSettings, setCurrentCurrency]);
 
   const handleToggleBiometric = async (value: boolean) => {
     if (!isBiometricSupported) {
@@ -402,8 +336,7 @@ export default function ProfileScreen() {
   const handleTogglePushNotification = async (value: boolean) => {
     if (value) {
       if (Platform.OS === 'web') {
-        setPushNotificationEnabled(true);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'true');
+        await setPushNotificationEnabled(true);
         showToast({
           type: 'success',
           title: t('common.success'),
@@ -414,16 +347,14 @@ export default function ProfileScreen() {
 
       const granted = await requestPushPermissions();
       if (granted) {
-        setPushNotificationEnabled(true);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'true');
+        await setPushNotificationEnabled(true);
         showToast({
           type: 'success',
           title: t('common.success'),
           message: t('profile.pushNotificationEnabledSuccess'),
         });
       } else {
-        setPushNotificationEnabled(false);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'false');
+        await setPushNotificationEnabled(false);
         showToast({
           type: 'info',
           title: t('common.notice'),
@@ -431,13 +362,7 @@ export default function ProfileScreen() {
         });
       }
     } else {
-      setPushNotificationEnabled(false);
-      await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'false');
-      // Tắt thông báo đẩy đồng nghĩa nhắc nhở ghi chép cũng không thể chạy
-      if (reminderEnabled) {
-        setReminderEnabled(false);
-        await setItem(STORAGE_KEYS.REMINDER_ENABLED, 'false');
-      }
+      await setPushNotificationEnabled(false);
       showToast({
         type: 'info',
         title: t('common.notice'),
@@ -456,8 +381,7 @@ export default function ProfileScreen() {
       return;
     }
 
-    setReminderEnabled(value);
-    await setItem(STORAGE_KEYS.REMINDER_ENABLED, value ? 'true' : 'false');
+    await setReminder(value);
     if (value) {
       setIsReminderModalVisible(true);
     } else {
@@ -470,8 +394,7 @@ export default function ProfileScreen() {
   };
 
   const handleSelectReminderTime = async (time: string) => {
-    setReminderTime(time);
-    await setItem(STORAGE_KEYS.REMINDER_TIME, time);
+    await setReminder(true, time);
     setIsReminderModalVisible(false);
     showToast({
       type: 'success',
@@ -496,9 +419,7 @@ export default function ProfileScreen() {
       type: newWalletType,
       balance: balanceNum,
     };
-    const updated = [newSource, ...wallets];
-    setWallets(updated);
-    await setItem(STORAGE_KEYS.WALLETS, JSON.stringify(updated));
+    await setWallets([newSource, ...wallets]);
     setNewWalletName('');
     setNewWalletBalance('');
     setIsAddWalletModalVisible(false);
@@ -523,8 +444,7 @@ export default function ProfileScreen() {
   };
 
   const handleSelectCurrency = async (curr: CurrencyOption) => {
-    setCurrentCurrency(curr.code);
-    await setItem(STORAGE_KEYS.CURRENCY, curr.code);
+    await setCurrentCurrency(curr.code);
     setIsCurrencyModalVisible(false);
 
     // Đồng bộ lên server chỉ trường currency (PATCH)
@@ -586,7 +506,7 @@ export default function ProfileScreen() {
     }
   };
 
-  if (isProfileLoading && !user) {
+  if (!isSettingsLoaded || (isProfileLoading && !user)) {
     return <ProfileSkeleton />;
   }
 

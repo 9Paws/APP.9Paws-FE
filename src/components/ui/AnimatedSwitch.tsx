@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Switch, type SwitchProps } from 'react-native';
 
 type AnimatedSwitchProps = SwitchProps & {
@@ -7,35 +7,38 @@ type AnimatedSwitchProps = SwitchProps & {
 };
 
 /**
- * Switch của React Native không có animation khi bật/tắt.
- * Component này bọc Switch lại và thêm hiệu ứng nở (scale) khi
- * giá trị chuyển từ false -> true, giúp UI/UX mượt hơn.
- *
- * Animated.Value luôn khởi tạo bằng 0 nên khi trạng thái đã lưu được
- * nạp lại (toggle đang bật), người dùng sẽ thấy hiệu ứng chuyển từ
- * tắt sang bật thay vì hiển thị bật sẵn.
+ * AnimatedSwitch: Bọc Switch của React Native.
+ * Khởi tạo đúng trạng thái ban đầu của value (không chạy animation khi mount lần đầu)
+ * để tránh tình trạng toggle bị giật/nhảy từ tắt sang bật khi mới mở màn hình.
  */
 export const AnimatedSwitch: React.FC<AnimatedSwitchProps> = ({
   value,
   animateOnEnable = true,
   ...props
 }) => {
-  const progress = useMemo(() => new Animated.Value(0), []);
+  const isFirstRender = useRef(true);
+  const [progress] = useState(() => new Animated.Value(value ? 1 : 0));
 
   useEffect(() => {
+    // Không chạy animation ở lần render đầu tiên để giữ state ban đầu mượt mà
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     if (!animateOnEnable) return;
 
     Animated.spring(progress, {
       toValue: value ? 1 : 0,
-      friction: 6,
-      tension: 70,
+      friction: 7,
+      tension: 90,
       useNativeDriver: true,
     }).start();
   }, [animateOnEnable, progress, value]);
 
   const scale = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.15],
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.06, 1],
   });
 
   return (

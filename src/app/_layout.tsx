@@ -20,6 +20,7 @@ import {
 } from '@expo-google-fonts/be-vietnam-pro';
 
 import { useAuthStore } from '@/stores/auth.store';
+import { useSettingsStore } from '@/stores/settings.store';
 import { Toast } from '@/components/ui/Toast';
 import { AnimatedSplashScreen } from '@/components/ui/AnimatedSplashScreen';
 import { api } from '@/lib/api';
@@ -90,6 +91,7 @@ export default function RootLayout() {
   useEffect(() => {
     initI18n().then(() => setIsI18nReady(true));
     initializeAuth();
+    useSettingsStore.getState().loadSettings();
   }, [initializeAuth]);
 
   useEffect(() => {
