@@ -169,7 +169,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
 
 /**
  * Screen Skeleton for Profile (Hồ sơ của tôi)
- * Perfectly mirrors ProfileScreen layout during initial data load or pull-to-refresh
+ * Perfectly mirrors ProfileScreen layout during network fetch
  */
 export const ProfileSkeleton: React.FC<{ style?: StyleProp<ViewStyle> }> = ({ style }) => {
   return (
@@ -178,11 +178,11 @@ export const ProfileSkeleton: React.FC<{ style?: StyleProp<ViewStyle> }> = ({ st
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 }}
       >
-        {/* Header */}
+        {/* Header: Greeting and avatar circle */}
         <View className="flex-row items-center justify-between mb-5">
           <View>
-            <Skeleton width={140} height={24} borderRadius={12} />
-            <Skeleton width={190} height={14} borderRadius={7} style={{ marginTop: 8 }} />
+            <Skeleton width={160} height={24} borderRadius={12} />
+            <Skeleton width={200} height={14} borderRadius={7} style={{ marginTop: 8 }} />
           </View>
           <View className="flex-row items-center gap-x-2.5">
             <SkeletonCircle size={40} />
@@ -194,8 +194,8 @@ export const ProfileSkeleton: React.FC<{ style?: StyleProp<ViewStyle> }> = ({ st
         <SkeletonCard className="flex-row items-center mb-6">
           <SkeletonCircle size={64} style={{ marginRight: 14 }} />
           <View className="flex-1">
-            <Skeleton width="60%" height={18} borderRadius={9} />
-            <Skeleton width="80%" height={13} borderRadius={6.5} style={{ marginTop: 8 }} />
+            <Skeleton width="55%" height={18} borderRadius={9} />
+            <Skeleton width="75%" height={13} borderRadius={6.5} style={{ marginTop: 8 }} />
           </View>
           <SkeletonCircle size={36} />
         </SkeletonCard>
@@ -207,13 +207,16 @@ export const ProfileSkeleton: React.FC<{ style?: StyleProp<ViewStyle> }> = ({ st
               <Skeleton width={24} height={24} borderRadius={6} />
               <Skeleton width={100} height={16} borderRadius={8} />
             </View>
-            <Skeleton width={80} height={26} borderRadius={13} />
+            <Skeleton width={80} height={28} borderRadius={14} />
           </View>
 
-          <SkeletonCard className="py-6 items-center justify-center">
-            <SkeletonCircle size={48} style={{ marginBottom: 12 }} />
-            <Skeleton width={130} height={16} borderRadius={8} style={{ marginBottom: 8 }} />
-            <Skeleton width={180} height={12} borderRadius={6} />
+          <SkeletonCard className="py-5 flex-row items-center">
+            <SkeletonCircle size={44} style={{ marginRight: 14 }} />
+            <View className="flex-1">
+              <Skeleton width="50%" height={16} borderRadius={8} style={{ marginBottom: 6 }} />
+              <Skeleton width="35%" height={13} borderRadius={6.5} />
+            </View>
+            <Skeleton width={90} height={20} borderRadius={10} />
           </SkeletonCard>
         </View>
 
@@ -221,7 +224,7 @@ export const ProfileSkeleton: React.FC<{ style?: StyleProp<ViewStyle> }> = ({ st
         <View className="mb-6">
           <View className="flex-row items-center gap-x-2 mb-3 px-1">
             <Skeleton width={24} height={24} borderRadius={6} />
-            <Skeleton width={140} height={16} borderRadius={8} />
+            <Skeleton width={150} height={16} borderRadius={8} />
           </View>
 
           <View className="flex-row gap-3">
@@ -238,25 +241,84 @@ export const ProfileSkeleton: React.FC<{ style?: StyleProp<ViewStyle> }> = ({ st
           </View>
         </View>
 
-        {/* Settings group */}
+        {/* Settings & Security Section (Cài đặt & Bảo mật) */}
         <View className="mb-6">
-          <Skeleton width={100} height={14} borderRadius={7} style={{ marginBottom: 10, marginLeft: 4 }} />
+          <View className="flex-row items-center gap-x-2 mb-3 px-1">
+            <Skeleton width={20} height={20} borderRadius={5} />
+            <Skeleton width={130} height={16} borderRadius={8} />
+          </View>
+
           <SkeletonCard>
-            {[1, 2, 3, 4].map((item) => (
-              <View
-                key={item}
-                className={`flex-row items-center py-3.5 ${item !== 4 ? 'border-b border-gray-50' : ''}`}
-              >
-                <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
-                <View className="flex-1 mr-2">
-                  <Skeleton width="45%" height={15} borderRadius={7.5} style={{ marginBottom: 6 }} />
-                  <Skeleton width="70%" height={12} borderRadius={6} />
-                </View>
-                <Skeleton width={20} height={20} borderRadius={10} />
+            {/* Setting Row 1: Push notifications with switch pill */}
+            <View className="flex-row items-center py-3.5 border-b border-gray-50">
+              <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
+              <View className="flex-1 mr-2">
+                <Skeleton width="38%" height={15} borderRadius={7.5} style={{ marginBottom: 6 }} />
+                <Skeleton width="65%" height={12} borderRadius={6} />
               </View>
-            ))}
+              <Skeleton width={48} height={26} borderRadius={13} />
+            </View>
+
+            {/* Setting Row 2: Biometric with switch pill */}
+            <View className="flex-row items-center py-3.5 border-b border-gray-50">
+              <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
+              <View className="flex-1 mr-2">
+                <Skeleton width="44%" height={15} borderRadius={7.5} style={{ marginBottom: 6 }} />
+                <Skeleton width="55%" height={12} borderRadius={6} />
+              </View>
+              <Skeleton width={48} height={26} borderRadius={13} />
+            </View>
+
+            {/* Setting Row 3: Daily reminder with switch pill */}
+            <View className="flex-row items-center py-3.5 border-b border-gray-50">
+              <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
+              <View className="flex-1 mr-2">
+                <Skeleton width="36%" height={15} borderRadius={7.5} style={{ marginBottom: 6 }} />
+                <Skeleton width="62%" height={12} borderRadius={6} />
+              </View>
+              <Skeleton width={48} height={26} borderRadius={13} />
+            </View>
+
+            {/* Setting Row 4: Currency with badge */}
+            <View className="flex-row items-center py-3.5 border-b border-gray-50">
+              <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
+              <View className="flex-1 mr-2">
+                <Skeleton width="32%" height={15} borderRadius={7.5} style={{ marginBottom: 6 }} />
+                <Skeleton width="45%" height={12} borderRadius={6} />
+              </View>
+              <Skeleton width={72} height={26} borderRadius={13} />
+            </View>
+
+            {/* Setting Row 5: Community & Feedback */}
+            <View className="flex-row items-center py-3.5 border-b border-gray-50">
+              <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
+              <View className="flex-1 mr-2">
+                <Skeleton width="38%" height={15} borderRadius={7.5} style={{ marginBottom: 6 }} />
+                <Skeleton width="52%" height={12} borderRadius={6} />
+              </View>
+              <Skeleton width={18} height={18} borderRadius={9} />
+            </View>
+
+            {/* Setting Row 6: About */}
+            <View className="flex-row items-center py-3.5">
+              <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
+              <View className="flex-1 mr-2">
+                <Skeleton width="28%" height={15} borderRadius={7.5} style={{ marginBottom: 6 }} />
+                <Skeleton width="40%" height={12} borderRadius={6} />
+              </View>
+              <Skeleton width={18} height={18} borderRadius={9} />
+            </View>
           </SkeletonCard>
         </View>
+
+        {/* Logout Row */}
+        <SkeletonCard className="flex-row items-center py-3.5">
+          <Skeleton width={44} height={44} borderRadius={16} style={{ marginRight: 14 }} />
+          <View className="flex-1">
+            <Skeleton width="30%" height={15} borderRadius={7.5} />
+          </View>
+          <Skeleton width={18} height={18} borderRadius={9} />
+        </SkeletonCard>
       </ScrollView>
     </SafeAreaView>
   );

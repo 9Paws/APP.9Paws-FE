@@ -141,7 +141,7 @@ export default function ProfileScreen() {
 
 
 
-  const [isProfileLoading, setIsProfileLoading] = useState(!user);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
@@ -506,7 +506,7 @@ export default function ProfileScreen() {
     }
   };
 
-  if (!isSettingsLoaded || (isProfileLoading && !user)) {
+  if (isProfileLoading || !isSettingsLoaded) {
     return <ProfileSkeleton />;
   }
 
