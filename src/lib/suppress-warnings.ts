@@ -1,11 +1,6 @@
 import { LogBox } from 'react-native';
 
-LogBox.ignoreLogs([
-  'ImageBackground is deprecated',
-  '[expo-notifications]',
-  '`expo-notifications` functionality is not fully supported in Expo Go',
-  'NO_I18NEXT_INSTANCE',
-]);
+LogBox.ignoreAllLogs(true); // Ignore all log notifications
 
 // Chặn thông báo cảnh báo deprecation từ thư viện bên thứ 3 và Expo Go gửi lên Metro terminal
 const originalWarn = console.warn;
