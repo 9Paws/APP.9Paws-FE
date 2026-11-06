@@ -4,6 +4,7 @@ import {
   Image,
   Modal,
   Platform,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -48,6 +49,7 @@ import { STORAGE_KEYS } from '@/lib/constants';
 
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
 import { AnimatedSwitch } from '@/components/ui/AnimatedSwitch';
+import { ProfileSkeleton } from '@/components/ui/Skeleton';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
@@ -144,6 +146,8 @@ export default function ProfileScreen() {
 
 
 
+  const [isProfileLoading, setIsProfileLoading] = useState(!user);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [wallets, setWallets] = useState<WalletItem[]>([]);
 
   const [currentCurrency, setCurrentCurrency] = useState<string>('VND');
@@ -173,6 +177,31 @@ export default function ProfileScreen() {
   const [newWalletName, setNewWalletName] = useState('');
   const [newWalletBalance, setNewWalletBalance] = useState('');
   const [newWalletType, setNewWalletType] = useState<'bank' | 'wallet' | 'cash'>('bank');
+
+  const onRefresh = React.useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await userService.getProfile();
+      if (res?.data) {
+        const localAvatar = await getItem(STORAGE_KEYS.AVATAR);
+        updateUser({
+          fullName: res.data.fullName,
+          phoneNumber: res.data.phoneNumber,
+          avatarUrl: res.data.avatarUrl || localAvatar || user?.avatarUrl,
+          isGoogleLinked: res.data.isGoogleLinked,
+          companionDays: res.data.companionDays,
+        });
+        if (res.data.settings?.currency) {
+          setCurrentCurrency(res.data.settings.currency);
+          await setItem(STORAGE_KEYS.CURRENCY, res.data.settings.currency);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [updateUser, user]);
 
   const fullName = user?.fullName || t('profile.defaultUserName');
   const email = user?.email || '';
@@ -275,8 +304,11 @@ export default function ProfileScreen() {
           await setItem(STORAGE_KEYS.CURRENCY, res.data.settings.currency);
         }
       }
-    }).catch(() => {});
-  }, [updateUser, user?.avatarUrl]);
+    }).catch(() => {})
+      .finally(() => {
+        setIsProfileLoading(false);
+      });
+  }, [updateUser, user]);
 
   const handleToggleBiometric = async (value: boolean) => {
     if (!isBiometricSupported) {
@@ -554,12 +586,17 @@ export default function ProfileScreen() {
     }
   };
 
+  if (isProfileLoading && !user) {
+    return <ProfileSkeleton />;
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-background-warm font-sans">
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         className="px-5 pt-3 pb-12"
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#F15C22" colors={["#F15C22"]} />}
       >
         {/* Top bar */}
         <View className="flex-row items-center justify-between mb-5">

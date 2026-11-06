@@ -21,7 +21,6 @@ import {
 
 import { useAuthStore } from '@/stores/auth.store';
 import { Toast } from '@/components/ui/Toast';
-import { GlobalLoading } from '@/components/ui/GlobalLoading';
 import { AnimatedSplashScreen } from '@/components/ui/AnimatedSplashScreen';
 import { api } from '@/lib/api';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -136,7 +135,6 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
         <Toast />
-        <GlobalLoading />
         {!isSplashFinished && (
           <AnimatedSplashScreen
             isReady={isAppReady}

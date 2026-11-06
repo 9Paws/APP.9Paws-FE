@@ -38,6 +38,7 @@ import { authService } from '@/services/auth.service';
 import { userService } from '@/services/user.service';
 import { getItem, setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
+import { EditProfileSkeleton } from '@/components/ui/Skeleton';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
@@ -324,6 +325,10 @@ export default function EditProfileScreen() {
       setIsSaving(false);
     }
   };
+
+  if (!user) {
+    return <EditProfileSkeleton />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#FAF7F2]">
