@@ -20,6 +20,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        animation: 'shift',
         tabBarLabelPosition: 'below-icon',
         sceneStyle: {
           backgroundColor: '#FAF7F2',
