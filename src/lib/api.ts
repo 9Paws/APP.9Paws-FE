@@ -2,8 +2,18 @@ import type { AuthResponse, SingleResponse } from '@/types';
 import axios, { create, InternalAxiosRequestConfig } from 'axios';
 import { STORAGE_KEYS } from './constants';
 import { getItem, removeItem, setItem } from './secure-storage';
+import { useLoadingStore } from '@/stores/loading.store';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/+$/, '');
+
+declare module 'axios' {
+    interface AxiosRequestConfig {
+        /** Bỏ qua overlay loading toàn cục cho request này */
+        skipGlobalLoading?: boolean;
+        /** Request này đã được tính vào bộ đếm loading toàn cục */
+        _globalLoadingTracked?: boolean;
+    }
+}
 
 export const api = create({
     baseURL: BASE_URL,
@@ -21,6 +31,20 @@ api.interceptors.request.use(
         const accessToken = await getItem(STORAGE_KEYS.ACCESS_TOKEN);
         if (accessToken && config.headers) {
             config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// =============================================================================
+// 1.1 GLOBAL LOADING: Đếm số request đang chạy để hiện overlay singleton
+// =============================================================================
+api.interceptors.request.use(
+    (config) => {
+        if (!config.skipGlobalLoading) {
+            useLoadingStore.getState().beginRequest();
+            config._globalLoadingTracked = true;
         }
         return config;
     },
@@ -59,7 +83,7 @@ api.interceptors.response.use(
             );
         } else if (error.request) {
             console.warn(
-                `[API Network Error] Không thể kết nối tới máy chủ API: ${error.message}`
+                `[API Network Error] Unable to reach the API server: ${error.message}`
             );
         }
 
@@ -115,6 +139,26 @@ api.interceptors.response.use(
             }
         }
 
+        return Promise.reject(error);
+    }
+);
+
+// =============================================================================
+// 3. GLOBAL LOADING: Giảm bộ đếm khi request hoàn tất
+// Đặt cuối cùng để request retry sau 401 vẫn giữ overlay liên tục,
+// tránh hiện/ẩn liên tục gây nhấp nháy.
+// =============================================================================
+api.interceptors.response.use(
+    (response) => {
+        if (response.config?._globalLoadingTracked) {
+            useLoadingStore.getState().endRequest();
+        }
+        return response;
+    },
+    (error) => {
+        if (error.config?._globalLoadingTracked) {
+            useLoadingStore.getState().endRequest();
+        }
         return Promise.reject(error);
     }
 );

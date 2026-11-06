@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Platform, View } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SplashScreen from 'expo-splash-screen';
+import { useTranslation } from 'react-i18next';
 
 import {
   useFonts,
@@ -20,6 +21,7 @@ import {
 
 import { useAuthStore } from '@/stores/auth.store';
 import { Toast } from '@/components/ui/Toast';
+import { GlobalLoading } from '@/components/ui/GlobalLoading';
 import { AnimatedSplashScreen } from '@/components/ui/AnimatedSplashScreen';
 import { api } from '@/lib/api';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -32,6 +34,7 @@ setupNotificationHandler();
 
 export default function RootLayout() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
   const [isI18nReady, setIsI18nReady] = useState(false);
   const [isBiometricVerified, setIsBiometricVerified] = useState(false);
@@ -63,7 +66,7 @@ export default function RootLayout() {
     googleAuthService.configure();
 
     // Pre-warm kết nối backend ngầm ngay khi app vừa mở
-    api.get('/', { timeout: 4000 }).catch(() => {});
+    api.get('/', { timeout: 4000, skipGlobalLoading: true }).catch(() => {});
 
     // Yêu cầu quyền thông báo đẩy lần đầu mở app
     const requestInitialPushPermission = async () => {
@@ -100,8 +103,8 @@ export default function RootLayout() {
             const isEnrolled = await LocalAuthentication.isEnrolledAsync();
             if (hasHardware && isEnrolled) {
               const res = await LocalAuthentication.authenticateAsync({
-                promptMessage: 'Xác thực sinh trắc học để mở 9Paws',
-                fallbackLabel: 'Sử dụng mật khẩu',
+                promptMessage: t('common.biometricPrompt'),
+                fallbackLabel: t('common.biometricFallback'),
               });
               if (res.success) {
                 setIsBiometricVerified(true);
@@ -116,7 +119,7 @@ export default function RootLayout() {
         router.replace('/(auth)/login' as any);
       }
     }
-  }, [isLoading, fontsLoaded, isI18nReady, isAuthenticated, isBiometricVerified, router]);
+  }, [isLoading, fontsLoaded, isI18nReady, isAuthenticated, isBiometricVerified, router, t, i18n.language]);
 
   const isAppReady = fontsLoaded && isI18nReady && !isLoading && minSplashTimePassed;
 
@@ -133,6 +136,7 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
         <Toast />
+        <GlobalLoading />
         {!isSplashFinished && (
           <AnimatedSplashScreen
             isReady={isAppReady}
