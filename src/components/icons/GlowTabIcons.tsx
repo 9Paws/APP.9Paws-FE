@@ -356,7 +356,7 @@ export function GlowAddCenterButton(props: any) {
       activeOpacity={0.85}
       style={[styles.addButtonTouchable, props.style]}
       accessibilityRole="button"
-      accessibilityLabel={t('tabs.addTransaction') || 'Thêm giao dịch'}
+      accessibilityLabel={t('tabs.addTransaction')}
     >
       <View style={styles.addOrbContainer}>
         {/* Glowing Orange Halo behind Orb */}

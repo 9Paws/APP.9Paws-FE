@@ -4,8 +4,8 @@ import {
   Image,
   Modal,
   Platform,
+  RefreshControl,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { getPushPermissions, requestPushPermissions } from '@/services/notification.service';
+import { requestPushPermissions } from '@/services/notification.service';
 import {
   Bell,
   BellRing,
@@ -40,6 +40,7 @@ import {
 } from 'lucide-react-native';
 
 import { useAuthStore } from '@/stores/auth.store';
+import { useSettingsStore, WalletItem } from '@/stores/settings.store';
 import { useToastStore } from '@/stores/toast.store';
 import { authService } from '@/services/auth.service';
 import { userService } from '@/services/user.service';
@@ -48,6 +49,8 @@ import { getItem, setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
 
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
+import { AnimatedSwitch } from '@/components/ui/AnimatedSwitch';
+import { ProfileSkeleton } from '@/components/ui/Skeleton';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
@@ -108,13 +111,7 @@ function SettingRow({
   return content;
 }
 
-interface WalletItem {
-  id: string;
-  name: string;
-  type: 'bank' | 'wallet' | 'cash';
-  balance: number;
-  badge?: string;
-}
+// WalletItem imported from @/stores/settings.store
 
 interface CurrencyOption {
   code: string;
@@ -125,12 +122,12 @@ interface CurrencyOption {
 }
 
 const CURRENCIES: CurrencyOption[] = [
-  { code: 'VND', name: 'Việt Nam Đồng', symbol: '₫', flag: '🇻🇳', locale: 'vi-VN' },
-  { code: 'USD', name: 'US Dollar', symbol: '$', flag: '🇺🇸', locale: 'en-US' },
-  { code: 'EUR', name: 'Euro', symbol: '€', flag: '🇪🇺', locale: 'de-DE' },
-  { code: 'JPY', name: 'Japanese Yen', symbol: '¥', flag: '🇯🇵', locale: 'ja-JP' },
-  { code: 'KRW', name: 'Korean Won', symbol: '₩', flag: '🇰🇷', locale: 'ko-KR' },
-  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', flag: '🇨🇳', locale: 'zh-CN' },
+  { code: 'VND', name: 'profile.currencyVnd', symbol: '₫', flag: '🇻🇳', locale: 'vi-VN' },
+  { code: 'USD', name: 'profile.currencyUsd', symbol: '$', flag: '🇺🇸', locale: 'en-US' },
+  { code: 'EUR', name: 'profile.currencyEur', symbol: '€', flag: '🇪🇺', locale: 'de-DE' },
+  { code: 'JPY', name: 'profile.currencyJpy', symbol: '¥', flag: '🇯🇵', locale: 'ja-JP' },
+  { code: 'KRW', name: 'profile.currencyKrw', symbol: '₩', flag: '🇰🇷', locale: 'ko-KR' },
+  { code: 'CNY', name: 'profile.currencyCny', symbol: '¥', flag: '🇨🇳', locale: 'zh-CN' },
 ];
 
 export default function ProfileScreen() {
@@ -144,14 +141,25 @@ export default function ProfileScreen() {
 
 
 
-  const [wallets, setWallets] = useState<WalletItem[]>([]);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [currentCurrency, setCurrentCurrency] = useState<string>('VND');
-  const [faceIdEnabled, setFaceIdEnabled] = useState(false);
-  const [isBiometricSupported, setIsBiometricSupported] = useState(true);
-  const [pushNotificationEnabled, setPushNotificationEnabled] = useState(false);
-  const [reminderEnabled, setReminderEnabled] = useState(true);
-  const [reminderTime, setReminderTime] = useState('21:00');
+  const {
+    isLoaded: isSettingsLoaded,
+    wallets,
+    currentCurrency,
+    faceIdEnabled,
+    isBiometricSupported,
+    pushNotificationEnabled,
+    reminderEnabled,
+    reminderTime,
+    loadSettings,
+    setFaceIdEnabled,
+    setPushNotificationEnabled,
+    setReminder,
+    setCurrentCurrency,
+    setWallets,
+  } = useSettingsStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
@@ -174,73 +182,44 @@ export default function ProfileScreen() {
   const [newWalletBalance, setNewWalletBalance] = useState('');
   const [newWalletType, setNewWalletType] = useState<'bank' | 'wallet' | 'cash'>('bank');
 
-  const fullName = user?.fullName || 'Người dùng 9Paws';
+  const onRefresh = React.useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const [res] = await Promise.all([
+        userService.getProfile(),
+        loadSettings(),
+      ]);
+      if (res?.data) {
+        const localAvatar = await getItem(STORAGE_KEYS.AVATAR);
+        updateUser({
+          fullName: res.data.fullName,
+          phoneNumber: res.data.phoneNumber,
+          avatarUrl: res.data.avatarUrl || localAvatar || user?.avatarUrl,
+          isGoogleLinked: res.data.isGoogleLinked,
+          companionDays: res.data.companionDays,
+        });
+        if (res.data.settings?.currency) {
+          setCurrentCurrency(res.data.settings.currency);
+          await setItem(STORAGE_KEYS.CURRENCY, res.data.settings.currency);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [updateUser, user, setCurrentCurrency, loadSettings]);
+
+  const fullName = user?.fullName || t('profile.defaultUserName');
   const email = user?.email || '';
-  const firstName = fullName.split(' ').pop() || 'bạn';
+  const firstName = fullName.split(' ').pop() || t('profile.defaultFirstName');
 
   useEffect(() => {
-    // Kiểm tra tính sẵn sàng của Face ID / Vân tay
-    const checkBiometrics = async () => {
-      try {
-        const hasHardware = await LocalAuthentication.hasHardwareAsync();
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        const supported = hasHardware && isEnrolled;
-        setIsBiometricSupported(supported);
 
-        if (!supported) {
-          setFaceIdEnabled(false);
-          await setItem(STORAGE_KEYS.BIOMETRIC_ENABLED, 'false');
-        } else {
-          const val = await getItem(STORAGE_KEYS.BIOMETRIC_ENABLED);
-          setFaceIdEnabled(val === 'true');
-        }
-      } catch {
-        setIsBiometricSupported(false);
-      }
-    };
 
-    // Kiểm tra trạng thái Push Notification
-    const checkPushStatus = async () => {
-      try {
-        if (Platform.OS === 'web') {
-          const val = await getItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED);
-          setPushNotificationEnabled(val === 'true');
-          return;
-        }
-        const granted = await getPushPermissions();
-        setPushNotificationEnabled(granted);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, granted ? 'true' : 'false');
-      } catch {
-        setPushNotificationEnabled(false);
-      }
-    };
-
-    checkBiometrics();
-    checkPushStatus();
-
-    getItem(STORAGE_KEYS.WALLETS).then((val) => {
-      if (val) {
-        try {
-          const parsed = JSON.parse(val);
-          if (Array.isArray(parsed)) {
-            setWallets(parsed);
-          }
-        } catch {
-          // Ignore parse error
-        }
-      }
-    });
-
-    getItem(STORAGE_KEYS.CURRENCY).then((val) => {
-      if (val) setCurrentCurrency(val);
-    });
-
-    getItem(STORAGE_KEYS.REMINDER_ENABLED).then((val) => {
-      if (val !== null && val !== undefined) setReminderEnabled(val === 'true');
-    });
-    getItem(STORAGE_KEYS.REMINDER_TIME).then((val) => {
-      if (val) setReminderTime(val);
-    });
+    if (!isSettingsLoaded) {
+      loadSettings();
+    }
 
     // Lấy thông tin người dùng mới nhất từ server
     userService.getProfile().then(async (res) => {
@@ -259,8 +238,11 @@ export default function ProfileScreen() {
           await setItem(STORAGE_KEYS.CURRENCY, res.data.settings.currency);
         }
       }
-    }).catch(() => {});
-  }, [updateUser, user?.avatarUrl]);
+    }).catch(() => {})
+      .finally(() => {
+        setIsProfileLoading(false);
+      });
+  }, [updateUser, user, isSettingsLoaded, loadSettings, setCurrentCurrency]);
 
   const handleToggleBiometric = async (value: boolean) => {
     if (!isBiometricSupported) {
@@ -300,8 +282,7 @@ export default function ProfileScreen() {
         showToast({
           type: 'info',
           title: 'Google Sign-In',
-          message:
-            'Tính năng liên kết Google yêu cầu chạy trên bản Development Build thiết bị thật (APK) để kết nối Google Play Services.',
+          message: t('common.googleNativeUnavailable'),
         });
         setIsGoogleLinkModalVisible(false);
         return;
@@ -332,8 +313,7 @@ export default function ProfileScreen() {
         showToast({
           type: 'info',
           title: 'Google Sign-In',
-          message:
-            'Tính năng liên kết Google yêu cầu chạy trên bản Development Build thiết bị thật (APK) để kết nối Google Play Services.',
+          message: t('common.googleNativeUnavailable'),
         });
         setIsGoogleLinkModalVisible(false);
         return;
@@ -342,7 +322,7 @@ export default function ProfileScreen() {
       const errMsg =
         err?.response?.data?.message ||
         err?.message ||
-        'Liên kết Google thất bại. Vui lòng kiểm tra lại tài khoản Google của bạn.';
+        t('profile.googleLinkFailed');
       showToast({
         type: 'error',
         title: t('common.error'),
@@ -356,8 +336,7 @@ export default function ProfileScreen() {
   const handleTogglePushNotification = async (value: boolean) => {
     if (value) {
       if (Platform.OS === 'web') {
-        setPushNotificationEnabled(true);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'true');
+        await setPushNotificationEnabled(true);
         showToast({
           type: 'success',
           title: t('common.success'),
@@ -368,16 +347,14 @@ export default function ProfileScreen() {
 
       const granted = await requestPushPermissions();
       if (granted) {
-        setPushNotificationEnabled(true);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'true');
+        await setPushNotificationEnabled(true);
         showToast({
           type: 'success',
           title: t('common.success'),
           message: t('profile.pushNotificationEnabledSuccess'),
         });
       } else {
-        setPushNotificationEnabled(false);
-        await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'false');
+        await setPushNotificationEnabled(false);
         showToast({
           type: 'info',
           title: t('common.notice'),
@@ -385,8 +362,7 @@ export default function ProfileScreen() {
         });
       }
     } else {
-      setPushNotificationEnabled(false);
-      await setItem(STORAGE_KEYS.PUSH_NOTIFICATIONS_ENABLED, 'false');
+      await setPushNotificationEnabled(false);
       showToast({
         type: 'info',
         title: t('common.notice'),
@@ -396,8 +372,16 @@ export default function ProfileScreen() {
   };
 
   const handleToggleReminder = async (value: boolean) => {
-    setReminderEnabled(value);
-    await setItem(STORAGE_KEYS.REMINDER_ENABLED, value ? 'true' : 'false');
+    if (value && !pushNotificationEnabled) {
+      showToast({
+        type: 'info',
+        title: t('common.notice'),
+        message: t('profile.reminderNeedsPushNotice'),
+      });
+      return;
+    }
+
+    await setReminder(value);
     if (value) {
       setIsReminderModalVisible(true);
     } else {
@@ -410,8 +394,7 @@ export default function ProfileScreen() {
   };
 
   const handleSelectReminderTime = async (time: string) => {
-    setReminderTime(time);
-    await setItem(STORAGE_KEYS.REMINDER_TIME, time);
+    await setReminder(true, time);
     setIsReminderModalVisible(false);
     showToast({
       type: 'success',
@@ -436,9 +419,7 @@ export default function ProfileScreen() {
       type: newWalletType,
       balance: balanceNum,
     };
-    const updated = [newSource, ...wallets];
-    setWallets(updated);
-    await setItem(STORAGE_KEYS.WALLETS, JSON.stringify(updated));
+    await setWallets([newSource, ...wallets]);
     setNewWalletName('');
     setNewWalletBalance('');
     setIsAddWalletModalVisible(false);
@@ -463,8 +444,7 @@ export default function ProfileScreen() {
   };
 
   const handleSelectCurrency = async (curr: CurrencyOption) => {
-    setCurrentCurrency(curr.code);
-    await setItem(STORAGE_KEYS.CURRENCY, curr.code);
+    await setCurrentCurrency(curr.code);
     setIsCurrencyModalVisible(false);
 
     // Đồng bộ lên server chỉ trường currency (PATCH)
@@ -476,7 +456,7 @@ export default function ProfileScreen() {
       type: 'success',
       title: t('profile.currencyChangedTitle'),
       message: t('profile.currencyChangedMessage', {
-        name: `${curr.name} (${curr.code} - ${curr.symbol})`,
+        name: `${t(curr.name)} (${curr.code} - ${curr.symbol})`,
       }),
     });
   };
@@ -526,12 +506,17 @@ export default function ProfileScreen() {
     }
   };
 
+  if (isProfileLoading || !isSettingsLoaded) {
+    return <ProfileSkeleton />;
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-background-warm font-sans">
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         className="px-5 pt-3 pb-12"
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#F15C22" colors={["#F15C22"]} />}
       >
         {/* Top bar */}
         <View className="flex-row items-center justify-between mb-5">
@@ -681,7 +666,7 @@ export default function ProfileScreen() {
               title={t('profile.pushNotification')}
               subtitle={t('profile.pushNotificationSub')}
               rightElement={
-                <Switch
+                <AnimatedSwitch
                   value={pushNotificationEnabled}
                   onValueChange={handleTogglePushNotification}
                   trackColor={{ false: '#E5E7EB', true: '#F15C22' }}
@@ -703,7 +688,7 @@ export default function ProfileScreen() {
                     : t('profile.biometricUnsupported')
                 }
                 rightElement={
-                  <Switch
+                  <AnimatedSwitch
                     value={isBiometricSupported && faceIdEnabled}
                     onValueChange={handleToggleBiometric}
                     disabled={!isBiometricSupported}
@@ -744,14 +729,19 @@ export default function ProfileScreen() {
               icon={<Bell size={20} color="#3B82F6" />}
               iconBgColor="bg-blue-50"
               title={t('profile.reminder')}
-              subtitle={t('profile.reminderSub', { time: reminderTime })}
+              subtitle={
+                pushNotificationEnabled
+                  ? t('profile.reminderSub', { time: reminderTime })
+                  : t('profile.reminderNeedsPushNotice')
+              }
               onPress={() => {
                 if (reminderEnabled) setIsReminderModalVisible(true);
               }}
               rightElement={
-                <Switch
+                <AnimatedSwitch
                   value={reminderEnabled}
                   onValueChange={handleToggleReminder}
+                  disabled={!pushNotificationEnabled}
                   trackColor={{ false: '#E5E7EB', true: '#F15C22' }}
                   thumbColor="#FFFFFF"
                 />
@@ -1113,7 +1103,7 @@ export default function ProfileScreen() {
                     <Text className="text-2xl mr-3">{curr.flag}</Text>
                     <View>
                       <Text className="text-sm font-bold text-text-main">
-                        {curr.name} ({curr.code})
+                        {t(curr.name)} ({curr.code})
                       </Text>
                       <Text className="text-xs text-text-muted font-sans">
                         {curr.symbol} • {curr.locale}

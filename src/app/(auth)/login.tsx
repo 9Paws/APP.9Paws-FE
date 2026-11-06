@@ -65,7 +65,7 @@ export default function LoginScreen() {
         err?.response?.data?.message ||
         (err?.response?.status === 401
           ? t('auth.login.loginFailed')
-          : 'Đăng nhập thất bại. Vui lòng kiểm tra lại kết nối!');
+          : t('auth.login.loginNetworkFailed'));
       setErrorMessage(serverMessage);
     } finally {
       setIsLoading(false);
@@ -86,7 +86,7 @@ export default function LoginScreen() {
         showToast({
           type: 'info',
           title: 'Google Sign-In',
-          message: 'Google Sign-In đã sẵn sàng cho bản Development Build thiết bị thật.',
+          message: t('auth.login.googleDevBuildReady'),
         });
         return;
       }
