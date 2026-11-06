@@ -35,13 +35,15 @@ interface PasswordStrengthProps {
 }
 
 function PasswordStrengthBar({ password = '' }: PasswordStrengthProps) {
+  const { t } = useTranslation();
+
   const getStrength = () => {
     if (!password) return 0;
     let score = 0;
     if (password.length >= 8) score++;
     if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
     return score;
   };
 
@@ -57,10 +59,9 @@ function PasswordStrengthBar({ password = '' }: PasswordStrengthProps) {
 
   const getLabel = () => {
     if (!password) return '';
-    if (strength <= 1) return 'Yếu';
-    if (strength <= 2) return 'Trung bình';
-    if (strength <= 3) return 'Khá';
-    return 'Mạnh';
+    if (strength <= 1) return t('auth.register.weak');
+    if (strength <= 2) return t('auth.register.medium');
+    return t('auth.register.strong');
   };
 
   const getTextColor = () => {
@@ -135,7 +136,7 @@ export default function RegisterScreen() {
       showToast({
         type: 'error',
         title: t('common.error'),
-        message: error.response?.data?.message ?? 'Đăng ký thất bại. Vui lòng thử lại!',
+        message: error.response?.data?.message ?? t('auth.register.registerFailed'),
       });
     } finally {
       setIsLoading(false);
@@ -155,7 +156,7 @@ export default function RegisterScreen() {
         showToast({
           type: 'info',
           title: 'Google Sign-In',
-          message: 'Google Sign-In đã sẵn sàng cho bản Development Build thiết bị thật.',
+          message: t('auth.login.googleDevBuildReady'),
         });
         return;
       }
@@ -163,7 +164,7 @@ export default function RegisterScreen() {
       showToast({
         type: 'error',
         title: t('common.error'),
-        message: errorMsg || 'Đăng nhập Google thất bại.',
+        message: errorMsg || t('auth.register.googleLoginFailed'),
       });
     } finally {
       setIsGoogleLoading(false);
@@ -213,7 +214,7 @@ export default function RegisterScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
                   label={t('auth.register.fullNameLabel')}
-                  placeholder="Nguyễn Văn A"
+                  placeholder={t('auth.register.fullNamePlaceholder')}
                   autoCapitalize="words"
                   leftIcon={<User size={18} color="#9CA3AF" />}
                   onChangeText={onChange}

@@ -8,7 +8,17 @@
     "confirm": "Xác nhận",
     "success": "Thành công",
     "error": "Lỗi",
-    "notice": "Thông báo"
+    "notice": "Thông báo",
+    "loading": "Đang tải...",
+    "biometricPrompt": "Xác thực sinh trắc học để mở 9Paws",
+    "biometricFallback": "Sử dụng mật khẩu",
+    "permissionPhotoLibrary": "Vui lòng cấp quyền truy cập thư viện ảnh để thay đổi hình đại diện.",
+    "errorOpenPhotoLibrary": "Không thể mở thư viện ảnh.",
+    "passwordStrength": "Độ mạnh mật khẩu",
+    "googleNativeUnavailable": "Tính năng đăng nhập với Google yêu cầu chạy trên bản Development Build thiết bị thật (APK) để kết nối Google Play Services.",
+    "googleConfigMissing": "Chưa cấu hình Web Client ID (EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID). Vui lòng thêm secret này vào GitHub Actions Secrets.",
+    "googleTokenNotFound": "Không nhận được Google ID Token từ hệ thống.",
+    "googleDeveloperError": "DEVELOPER_ERROR (Mã 10): Mã chứng chỉ SHA-1 của Keystore chưa được đăng ký trong Google Cloud Console (OAuth Client ID loại Android với package com.ninepaws.app)."
   },
   "auth": {
     "login": {
@@ -24,7 +34,9 @@
       "noAccount": "Chưa có tài khoản 9Paws? ",
       "registerNow": "Đăng ký ngay",
       "loginSuccess": "Đăng nhập thành công! Chào mừng bạn trở lại",
-      "loginFailed": "Email hoặc mật khẩu không chính xác. Vui lòng thử lại!"
+      "loginFailed": "Email hoặc mật khẩu không chính xác. Vui lòng thử lại!",
+      "loginNetworkFailed": "Đăng nhập thất bại. Vui lòng kiểm tra lại kết nối!",
+      "googleDevBuildReady": "Google Sign-In đã sẵn sàng cho bản Development Build thiết bị thật."
     },
     "register": {
       "title": "Tạo tài khoản 9Paws",
@@ -42,7 +54,10 @@
       "googleComingSoon": "Tính năng đăng ký với Google đang được tích hợp.",
       "hasAccount": "Đã có tài khoản? ",
       "loginNow": "Đăng nhập ngay",
-      "registerSuccess": "Mã xác thực OTP đã được gửi đến email của bạn."
+      "registerSuccess": "Mã xác thực OTP đã được gửi đến email của bạn.",
+      "registerFailed": "Đăng ký thất bại. Vui lòng thử lại!",
+      "googleLoginFailed": "Đăng nhập Google thất bại.",
+      "fullNamePlaceholder": "Nguyễn Văn A"
     },
     "otp": {
       "title": "Nhập mã xác thực",
@@ -54,7 +69,11 @@
       "submitButton": "Xác nhận",
       "incomplete": "Vui lòng nhập đủ 6 chữ số mã OTP.",
       "resendWait": "Mã vẫn còn hiệu lực. Vui lòng chờ trước khi yêu cầu lại.",
-      "resendSuccess": "Mã xác thực mới đã được gửi tới hộp thư của bạn."
+      "resendSuccess": "Mã xác thực mới đã được gửi tới hộp thư của bạn.",
+      "verifySuccess": "Chào mừng bạn đã gia nhập 9Paws ✨",
+      "verifyFailed": "Mã OTP không chính xác hoặc đã hết hạn.",
+      "resendFailed": "Không thể gửi lại mã OTP. Vui lòng thử lại sau.",
+      "backButton": "Quay lại"
     },
     "forgotPassword": {
       "title": "Quên mật khẩu",
@@ -124,6 +143,17 @@
     "currency": "Đơn vị tiền tệ",
     "currencySub": "Đơn vị hiển thị",
     "currencyValue": "Việt Nam Đồng (VND - đ)",
+    "currencyVnd": "Việt Nam Đồng",
+    "currencyUsd": "US Dollar",
+    "currencyEur": "Euro",
+    "currencyJpy": "Japanese Yen",
+    "currencyKrw": "Korean Won",
+    "currencyCny": "Chinese Yuan",
+    "defaultUserName": "Người dùng 9Paws",
+    "defaultFirstName": "bạn",
+    "googleLinkFailed": "Liên kết Google thất bại. Vui lòng kiểm tra lại tài khoản Google của bạn.",
+    "reminderNeedsPushNotice": "Vui lòng bật thông báo đẩy trước khi bật nhắc nhở ghi chép.",
+    "emailNotSet": "Chưa cập nhật email",
     "currencyModalTitle": "Chọn đơn vị tiền tệ",
     "currencyChangedTitle": "Đã đổi đơn vị tiền tệ",
     "currencyChangedMessage": "Đã chuyển sang {{name}}",
@@ -256,5 +286,47 @@
     "splitDesc": "Tự động hoá quyết toán hoá đơn nhóm & chia tiền cùng 9Paws.",
     "addTitle": "Thêm giao dịch mới",
     "addDesc": "Ghi chép chi tiêu nhanh hoặc quét hóa đơn thông minh."
+  },
+  "splash": {
+    "badgeText": "Đồng hành cùng Miu Miu",
+    "versionLabel": "Phiên bản {{version}}",
+    "subtitle": "Chi tiêu nhẹ nhàng & Chia bill dễ dàng"
+  },
+  "legal": {
+    "termsEffectiveDate": "Có hiệu lực từ ngày: 01/07/2024 • Phiên bản: 1.0 (Phù hợp pháp luật Việt Nam)",
+    "termsSection1Title": "1. Giới thiệu và Phạm vi dịch vụ",
+    "termsSection1Body": "9Paws là ứng dụng công nghệ hỗ trợ quản lý chi tiêu cá nhân và chia sẻ hoá đơn nhóm. Bằng việc tải về, cài đặt hoặc sử dụng ứng dụng, bạn đồng ý tuân thủ các Điều khoản này cùng các quy định pháp luật hiện hành của nước Cộng hòa Xã hội Chủ nghĩa Việt Nam.",
+    "termsSection2Title": "2. Tuyên bố phi trung gian tài chính (Nghị định 52/2024/NĐ-CP)",
+    "termsSection2Body": "9Paws hoàn toàn KHÔNG PHẢI là ngân hàng, tổ chức tín dụng, ví điện tử hay tổ chức cung ứng dịch vụ trung gian thanh toán theo quy định tại Nghị định số 52/2024/NĐ-CP của Chính phủ. Chúng tôi không mở tài khoản thanh toán, không huy động hay lưu giữ tiền của người dùng và không cung ứng dịch vụ chuyển tiền thay thế. Mọi hành vi tất toán, chuyển khoản đều do người dùng tự chủ động thực hiện trực tiếp giữa các bên qua ngân hàng chính thức.",
+    "termsSection3Title": "3. Trách nhiệm người dùng và Sở hữu dữ liệu",
+    "termsSection3Body": "Bạn chịu trách nhiệm về tính chính xác của các con số chi tiêu nhập vào ứng dụng và bảo mật thiết bị cá nhân của mình. Dữ liệu ghi chép thu chi thuộc toàn quyền sở hữu của bạn.",
+    "termsSection4Title": "4. Bảo vệ quyền lợi người dùng (Luật số 19/2023/QH15)",
+    "termsSection4Body": "Chúng tôi cam kết minh bạch mọi tính năng, không phát sinh chi phí ẩn. Người dùng có quyền đóng tài khoản và xoá toàn bộ dữ liệu bất kỳ khi nào có nhu cầu mà không chịu ràng buộc nghĩa vụ.",
+    "termsSection5Title": "5. Giải quyết tranh chấp và Khiếu nại",
+    "termsSection5Body": "Mọi thắc mắc, khiếu nại xin vui lòng gửi về email: support@9paws.com. Chúng tôi cam kết tiếp nhận và phản hồi theo quy định của pháp luật Việt Nam.",
+    "privacyComplianceNote": "Tuân thủ Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân (PDPD)",
+    "privacySection1Title": "1. Nguyên tắc thu thập dữ liệu tối giản",
+    "privacySection1Body": "9Paws chỉ thu thập các thông tin tối thiểu cần thiết để vận hành tài khoản: Họ tên, địa chỉ Email, số điện thoại (nếu bạn cung cấp) và ảnh đại diện. Chúng tôi TUYỆT ĐỐI KHÔNG thu thập số CCCD, tài khoản ngân hàng, mật khẩu giao dịch ngân hàng hay mã OTP thanh toán.",
+    "privacySection2Title": "2. Quyền của Chủ thể Dữ liệu (Điều 9 - Nghị định 13/2023/NĐ-CP)",
+    "privacySection2Body": "Bạn có đầy đủ các quyền theo luật định đối với dữ liệu của mình:\n• Quyền được biết và đồng ý với mục đích xử lý dữ liệu.\n• Quyền truy cập, chỉnh sửa thông tin cá nhân trong mục Chỉnh sửa hồ sơ.\n• Quyền rút lại sự đồng ý hoặc từ chối bật tính năng sinh trắc học/thông báo.\n• Quyền yêu cầu xóa vĩnh viễn toàn bộ dữ liệu và tài khoản (Right to erasure).",
+    "privacySection3Title": "3. Cam kết không chia sẻ dữ liệu cho bên thứ ba",
+    "privacySection3Body": "9Paws cam đoan không bán, không cho thuê, không chia sẻ dữ liệu chi tiêu cá nhân của người dùng cho bất kỳ đối tác quảng cáo hay tổ chức tín dụng nào.",
+    "privacySection4Title": "4. Biện pháp an toàn kỹ thuật (Luật An ninh mạng 2018)",
+    "privacySection4Body": "Toàn bộ đường truyền kết nối đều được mã hóa bằng giao thức HTTPS/TLS 1.3 tiêu chuẩn. Dữ liệu xác thực vân tay/Face ID được xử lý hoàn toàn cục bộ trên phần cứng bảo mật của thiết bị (iOS Keychain / Android Keystore) và không bao giờ gửi về máy chủ.",
+    "privacySection5Title": "5. Đầu mối liên hệ bảo vệ dữ liệu cá nhân (DPO)",
+    "privacySection5Body": "Nếu bạn có bất kỳ câu hỏi hoặc yêu cầu thực hiện quyền chủ thể dữ liệu, vui lòng liên hệ Bộ phận Bảo vệ dữ liệu của 9Paws qua email: privacy@9paws.com hoặc support@9paws.com."
+  },
+  "validation": {
+    "emailRequired": "Vui lòng nhập email",
+    "emailInvalid": "Địa chỉ email không đúng định dạng",
+    "passwordRequired": "Vui lòng nhập mật khẩu",
+    "passwordMinLength": "Mật khẩu phải có ít nhất 8 ký tự",
+    "passwordPattern": "Mật khẩu phải chứa chữ in hoa, chữ in thường và chữ số",
+    "confirmPasswordRequired": "Vui lòng xác nhận lại mật khẩu",
+    "passwordsMismatch": "Mật khẩu xác nhận không khớp",
+    "fullNameRequired": "Vui lòng nhập họ và tên",
+    "fullNameMaxLength": "Họ và tên tối đa 100 ký tự",
+    "otpLength": "Mã OTP phải có đúng 6 chữ số",
+    "otpDigitsOnly": "Mã OTP chỉ bao gồm các chữ số"
   }
 }

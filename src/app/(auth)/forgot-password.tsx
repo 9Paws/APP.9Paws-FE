@@ -72,8 +72,8 @@ export default function ForgotPasswordScreen() {
   // Calculate password strength
   const getPasswordStrength = (pwd: string): PasswordStrength => {
     if (!pwd || pwd.length < 6) return 'weak';
-    if (pwd.length >= 8 && /[A-Za-z]/.test(pwd) && /\d/.test(pwd)) {
-      return pwd.length >= 10 && /[^A-Za-z0-9]/.test(pwd) ? 'strong' : 'medium';
+    if (pwd.length >= 8 && /[a-z]/.test(pwd) && /[A-Z]/.test(pwd) && /\d/.test(pwd)) {
+      return 'strong';
     }
     return 'weak';
   };
@@ -332,7 +332,9 @@ export default function ForgotPasswordScreen() {
               {newPasswordValue.length > 0 && (
                 <View className="mb-4 mt-1">
                   <View className="flex-row items-center justify-between mb-1">
-                    <Text className="text-xs text-text-muted font-sans">Độ mạnh mật khẩu</Text>
+                    <Text className="text-xs text-text-muted font-sans">
+                      {t('common.passwordStrength')}
+                    </Text>
                     <Text
                       className={`text-xs font-bold ${
                         strength === 'weak'

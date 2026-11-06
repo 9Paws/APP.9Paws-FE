@@ -60,7 +60,7 @@ export default function OtpScreen() {
         showToast({
           type: 'success',
           title: t('common.success'),
-          message: 'Chào mừng bạn đã gia nhập 9Paws ✨',
+          message: t('auth.otp.verifySuccess'),
         });
         router.replace('/(tabs)' as any);
       }
@@ -69,7 +69,7 @@ export default function OtpScreen() {
       showToast({
         type: 'error',
         title: t('common.error'),
-        message: error.response?.data?.message ?? 'Mã OTP không chính xác hoặc đã hết hạn.',
+        message: error.response?.data?.message ?? t('auth.otp.verifyFailed'),
       });
     } finally {
       setIsLoading(false);
@@ -103,7 +103,7 @@ export default function OtpScreen() {
       showToast({
         type: 'error',
         title: t('common.error'),
-        message: error.response?.data?.message ?? 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.',
+        message: error.response?.data?.message ?? t('auth.otp.resendFailed'),
       });
     } finally {
       setIsResending(false);
@@ -125,7 +125,7 @@ export default function OtpScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             className="h-11 w-11 items-center justify-center rounded-full bg-white border border-gray-100 shadow-sm"
-            accessibilityLabel="Quay lại"
+            accessibilityLabel={t('auth.otp.backButton')}
           >
             <ArrowLeft size={20} color="#1F2937" />
           </TouchableOpacity>

@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
@@ -21,6 +22,8 @@ interface AnimatedSplashScreenProps {
 
 export function AnimatedSplashScreen({ isReady, onFinish }: AnimatedSplashScreenProps) {
   const { t } = useTranslation();
+  const appVersion =
+    Constants.expoConfig?.version || Constants.nativeAppVersion || '1.0.0';
 
   // Animation drivers using lazy useState (React 19 / Compiler compliant)
   const [containerOpacity] = useState(() => new Animated.Value(1));
@@ -250,7 +253,7 @@ export function AnimatedSplashScreen({ isReady, onFinish }: AnimatedSplashScreen
             <Text style={[styles.brandTitle, styles.brandHighlight]}>Paws</Text>
           </View>
           <Text style={styles.brandSubtitle}>
-            {t('auth.login.subtitle', { defaultValue: 'Chi tiêu nhẹ nhàng & Chia bill dễ dàng' })}
+            {t('splash.subtitle')}
           </Text>
         </Animated.View>
 
@@ -258,7 +261,7 @@ export function AnimatedSplashScreen({ isReady, onFinish }: AnimatedSplashScreen
         <Animated.View style={[styles.badgeContainer, { opacity: badgeOpacity }]}>
           <View style={styles.badge}>
             <Text style={styles.badgePaw}>🐾</Text>
-            <Text style={styles.badgeText}>Đồng hành cùng Miu Miu</Text>
+            <Text style={styles.badgeText}>{t('splash.badgeText')}</Text>
           </View>
         </Animated.View>
       </View>
@@ -270,7 +273,9 @@ export function AnimatedSplashScreen({ isReady, onFinish }: AnimatedSplashScreen
           <Animated.View style={[styles.dot, { transform: [{ scale: dot2Scale }] }]} />
           <Animated.View style={[styles.dot, { transform: [{ scale: dot3Scale }] }]} />
         </View>
-        <Text style={styles.bottomVersion}>Phiên bản 1.0.0</Text>
+        <Text style={styles.bottomVersion}>
+          {t('splash.versionLabel', { version: appVersion })}
+        </Text>
       </Animated.View>
     </Animated.View>
   );

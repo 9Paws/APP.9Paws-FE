@@ -5,6 +5,14 @@ import { getItem, removeItem, setItem } from './secure-storage';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/+$/, '');
 
+declare module 'axios' {
+    interface AxiosRequestConfig {
+        /** @deprecated Bỏ qua overlay loading toàn cục nếu còn dùng */
+        skipGlobalLoading?: boolean;
+        _globalLoadingTracked?: boolean;
+    }
+}
+
 export const api = create({
     baseURL: BASE_URL,
     timeout: 15000,
@@ -59,7 +67,7 @@ api.interceptors.response.use(
             );
         } else if (error.request) {
             console.warn(
-                `[API Network Error] Không thể kết nối tới máy chủ API: ${error.message}`
+                `[API Network Error] Unable to reach the API server: ${error.message}`
             );
         }
 

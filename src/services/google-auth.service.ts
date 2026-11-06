@@ -1,5 +1,6 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform, TurboModuleRegistry } from 'react-native';
+import i18n from '@/i18n';
 
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
@@ -60,15 +61,13 @@ export const googleAuthService = {
         const GoogleSignin = getNativeGoogleSigninModule();
         if (!GoogleSignin) {
             throw new Error(
-                'GOOGLE_NATIVE_UNAVAILABLE: Google Sign-In yêu cầu chạy trên bản Development Build (npx expo run:android). Tính năng này không hỗ trợ trực tiếp trên Expo Go do thiếu Native Module.'
+                `GOOGLE_NATIVE_UNAVAILABLE: ${i18n.t('common.googleNativeUnavailable')}`
             );
         }
 
         const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
         if (!webClientId || webClientId.includes('your-google-web-client-id')) {
-            throw new Error(
-                'Chưa cấu hình Web Client ID (EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID). Vui lòng thêm secret này vào GitHub Actions Secrets.'
-            );
+            throw new Error(`GOOGLE_CONFIG_MISSING: ${i18n.t('common.googleConfigMissing')}`);
         }
 
         // Tự động re-configure trước khi gọi signIn để đảm bảo webClientId luôn được nạp đầy đủ
@@ -90,7 +89,7 @@ export const googleAuthService = {
             const idToken = response.data?.idToken ?? (response as any).idToken;
 
             if (!idToken) {
-                throw new Error('GOOGLE_TOKEN_NOT_FOUND: Không nhận được Google ID Token từ hệ thống.');
+                throw new Error(`GOOGLE_TOKEN_NOT_FOUND: ${i18n.t('common.googleTokenNotFound')}`);
             }
 
             return {
@@ -103,9 +102,7 @@ export const googleAuthService = {
                 error?.code === 'DEVELOPER_ERROR' ||
                 error?.message?.includes('DEVELOPER_ERROR')
             ) {
-                throw new Error(
-                    'DEVELOPER_ERROR (Mã 10): Mã chứng chỉ SHA-1 của Keystore chưa được đăng ký trong Google Cloud Console (OAuth Client ID loại Android với package com.ninepaws.app).'
-                );
+                throw new Error(`DEVELOPER_ERROR: ${i18n.t('common.googleDeveloperError')}`);
             }
             throw error;
         }

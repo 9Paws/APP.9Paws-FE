@@ -424,106 +424,102 @@ export default function AboutScreen() {
             {activeModal === 'terms' ? (
               <View className="gap-y-4 pb-10">
                 <Text className="text-xs font-semibold text-gray-500 font-sans">
-                  Có hiệu lực từ ngày: 01/07/2024 • Phiên bản: 1.0 (Phù hợp pháp luật Việt Nam)
+                  {t('legal.termsEffectiveDate')}
                 </Text>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    1. Giới thiệu và Phạm vi dịch vụ
+                    {t('legal.termsSection1Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    9Paws là ứng dụng công nghệ hỗ trợ quản lý chi tiêu cá nhân và chia sẻ hoá đơn nhóm. Bằng việc tải về, cài đặt hoặc sử dụng ứng dụng, bạn đồng ý tuân thủ các Điều khoản này cùng các quy định pháp luật hiện hành của nước Cộng hòa Xã hội Chủ nghĩa Việt Nam.
+                    {t('legal.termsSection1Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    2. Tuyên bố phi trung gian tài chính (Nghị định 52/2024/NĐ-CP)
+                    {t('legal.termsSection2Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    9Paws hoàn toàn KHÔNG PHẢI là ngân hàng, tổ chức tín dụng, ví điện tử hay tổ chức cung ứng dịch vụ trung gian thanh toán theo quy định tại Nghị định số 52/2024/NĐ-CP của Chính phủ. Chúng tôi không mở tài khoản thanh toán, không huy động hay lưu giữ tiền của người dùng và không cung ứng dịch vụ chuyển tiền thay thế. Mọi hành vi tất toán, chuyển khoản đều do người dùng tự chủ động thực hiện trực tiếp giữa các bên qua ngân hàng chính thức.
+                    {t('legal.termsSection2Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    3. Trách nhiệm người dùng và Sở hữu dữ liệu
+                    {t('legal.termsSection3Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    Bạn chịu trách nhiệm về tính chính xác của các con số chi tiêu nhập vào ứng dụng và bảo mật thiết bị cá nhân của mình. Dữ liệu ghi chép thu chi thuộc toàn quyền sở hữu của bạn.
+                    {t('legal.termsSection3Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    4. Bảo vệ quyền lợi người dùng (Luật số 19/2023/QH15)
+                    {t('legal.termsSection4Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    Chúng tôi cam kết minh bạch mọi tính năng, không phát sinh chi phí ẩn. Người dùng có quyền đóng tài khoản và xoá toàn bộ dữ liệu bất kỳ khi nào có nhu cầu mà không chịu ràng buộc nghĩa vụ.
+                    {t('legal.termsSection4Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    5. Giải quyết tranh chấp và Khiếu nại
+                    {t('legal.termsSection5Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    Mọi thắc mắc, khiếu nại xin vui lòng gửi về email: support@9paws.com. Chúng tôi cam kết tiếp nhận và phản hồi theo quy định của pháp luật Việt Nam.
+                    {t('legal.termsSection5Body')}
                   </Text>
                 </View>
               </View>
             ) : (
               <View className="gap-y-4 pb-10">
                 <Text className="text-xs font-semibold text-gray-500 font-sans">
-                  Tuân thủ Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân (PDPD)
+                  {t('legal.privacyComplianceNote')}
                 </Text>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    1. Nguyên tắc thu thập dữ liệu tối giản
+                    {t('legal.privacySection1Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    9Paws chỉ thu thập các thông tin tối thiểu cần thiết để vận hành tài khoản: Họ tên, địa chỉ Email, số điện thoại (nếu bạn cung cấp) và ảnh đại diện. Chúng tôi TUYỆT ĐỐI KHÔNG thu thập số CCCD, tài khoản ngân hàng, mật khẩu giao dịch ngân hàng hay mã OTP thanh toán.
+                    {t('legal.privacySection1Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    2. Quyền của Chủ thể Dữ liệu (Điều 9 - Nghị định 13/2023/NĐ-CP)
+                    {t('legal.privacySection2Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    Bạn có đầy đủ các quyền theo luật định đối với dữ liệu của mình:
-                    {'\n'}• Quyền được biết và đồng ý với mục đích xử lý dữ liệu.
-                    {'\n'}• Quyền truy cập, chỉnh sửa thông tin cá nhân trong mục Chỉnh sửa hồ sơ.
-                    {'\n'}• Quyền rút lại sự đồng ý hoặc từ chối bật tính năng sinh trắc học/thông báo.
-                    {'\n'}• Quyền yêu cầu xóa vĩnh viễn toàn bộ dữ liệu và tài khoản (Right to erasure).
+                    {t('legal.privacySection2Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    3. Cam kết không chia sẻ dữ liệu cho bên thứ ba
+                    {t('legal.privacySection3Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    9Paws cam đoan không bán, không cho thuê, không chia sẻ dữ liệu chi tiêu cá nhân của người dùng cho bất kỳ đối tác quảng cáo hay tổ chức tín dụng nào.
+                    {t('legal.privacySection3Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    4. Biện pháp an toàn kỹ thuật (Luật An ninh mạng 2018)
+                    {t('legal.privacySection4Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    Toàn bộ đường truyền kết nối đều được mã hóa bằng giao thức HTTPS/TLS 1.3 tiêu chuẩn. Dữ liệu xác thực vân tay/Face ID được xử lý hoàn toàn cục bộ trên phần cứng bảo mật của thiết bị (iOS Keychain / Android Keystore) và không bao giờ gửi về máy chủ.
+                    {t('legal.privacySection4Body')}
                   </Text>
                 </View>
 
                 <View>
                   <Text className="text-sm font-bold text-gray-900 mb-1">
-                    5. Đầu mối liên hệ bảo vệ dữ liệu cá nhân (DPO)
+                    {t('legal.privacySection5Title')}
                   </Text>
                   <Text className="text-xs text-gray-600 font-sans leading-5">
-                    Nếu bạn có bất kỳ câu hỏi hoặc yêu cầu thực hiện quyền chủ thể dữ liệu, vui lòng liên hệ Bộ phận Bảo vệ dữ liệu của 9Paws qua email: privacy@9paws.com hoặc support@9paws.com.
+                    {t('legal.privacySection5Body')}
                   </Text>
                 </View>
               </View>

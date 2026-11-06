@@ -38,6 +38,7 @@ import { authService } from '@/services/auth.service';
 import { userService } from '@/services/user.service';
 import { getItem, setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
+import { EditProfileSkeleton } from '@/components/ui/Skeleton';
 
 const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
 
@@ -202,7 +203,7 @@ export default function EditProfileScreen() {
         showToast({
           type: 'error',
           title: t('common.notice'),
-          message: 'Vui lòng cấp quyền truy cập thư viện ảnh để thay đổi hình đại diện.',
+          message: t('common.permissionPhotoLibrary'),
         });
         return;
       }
@@ -223,7 +224,7 @@ export default function EditProfileScreen() {
       showToast({
         type: 'error',
         title: t('common.error'),
-        message: 'Không thể mở thư viện ảnh.',
+        message: t('common.errorOpenPhotoLibrary'),
       });
     }
   };
@@ -324,6 +325,10 @@ export default function EditProfileScreen() {
       setIsSaving(false);
     }
   };
+
+  if (!user) {
+    return <EditProfileSkeleton />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#FAF7F2]">
@@ -445,7 +450,7 @@ export default function EditProfileScreen() {
               <View className="flex-row items-center h-12 rounded-2xl bg-gray-50 border border-gray-200/60 px-4">
                 <Mail size={18} color="#9CA3AF" />
                 <Text className="flex-1 ml-3 text-sm text-gray-500 font-sans" numberOfLines={1}>
-                  {email || 'Chưa cập nhật email'}
+                  {email || t('profile.emailNotSet')}
                 </Text>
               </View>
               <Text className="mt-1 text-[11px] text-gray-400 font-sans">
