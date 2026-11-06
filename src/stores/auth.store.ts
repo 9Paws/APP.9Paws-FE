@@ -1,5 +1,6 @@
 import { STORAGE_KEYS } from '@/lib/constants';
 import { getItem, removeItem, setItem } from '@/lib/secure-storage';
+import { googleAuthService } from '@/services/google-auth.service';
 import type { AuthResponse, UserResponse } from '@/types';
 import { create } from 'zustand';
 
@@ -72,6 +73,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
 
     logout: async () => {
+        // Xoá phiên Google để lần đăng nhập sau hiển thị màn hình chọn tài khoản
+        // thay vì tự động chọn lại tài khoản vừa đăng xuất.
+        await googleAuthService.signOut();
+
         await Promise.all([
             removeItem(STORAGE_KEYS.ACCESS_TOKEN),
             removeItem(STORAGE_KEYS.REFRESH_TOKEN),
