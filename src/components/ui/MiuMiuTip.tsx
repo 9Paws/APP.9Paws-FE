@@ -6,7 +6,7 @@ interface MiuMiuTipProps {
     content: string;
 }
 
-const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
+const MIU_MIU_IMAGE = require('@/assets/images/miu-miu.png');
 
 export const MiuMiuTip: React.FC<MiuMiuTipProps> = ({ content }) => {
     const { t } = useTranslation();

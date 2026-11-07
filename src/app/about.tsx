@@ -31,7 +31,7 @@ import {
   X,
 } from 'lucide-react-native';
 
-const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
+const MIU_MIU_IMAGE = require('@/assets/images/miu-miu.png');
 
 export default function AboutScreen() {
   const router = useRouter();
