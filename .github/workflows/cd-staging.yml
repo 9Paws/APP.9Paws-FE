@@ -100,6 +100,7 @@ jobs:
             - name: Publish Versioned GitHub Release & APK Download
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   APP_VERSION=$(node -p "require('./package.json').version")
                   TAG_NAME="v${APP_VERSION}"
@@ -108,14 +109,10 @@ jobs:
 
                   cp ./9Paws-Staging.apk ./"$APK_NAME"
 
-                  echo "Publishing release: $RELEASE_TITLE (Tag: $TAG_NAME)..."
+                  echo "Tạo nội dung mô tả chi tiết cho release $RELEASE_TITLE qua Gemini AI..."
+                  python3 .github/scripts/generate-release-notes.py --version "$TAG_NAME" --output release_notes.md
 
-                  echo "### 🐾 9Paws Mobile App — $RELEASE_TITLE" > release_notes.md
-                  echo "" >> release_notes.md
-                  echo "**Điểm nổi bật trong bản phát hành:**" >> release_notes.md
-                  echo "- 🎨 Sửa triệt để viền trắng vuông góc quanh avatar/mascot Miu Miu trên toàn bộ ứng dụng." >> release_notes.md
-                  echo "- ⚡ Cải tiến luồng khởi động: loại bỏ màn hình splash tĩnh, chuyển tiếp mượt mà vào splash động." >> release_notes.md
-                  echo "- 📦 Tối ưu hóa dung lượng file APK giảm hơn 50% (từ 57MB xuống ~24.9MB) nhờ nén Hermes bytecode và useLegacyPackaging." >> release_notes.md
+                  echo "Publishing release: $RELEASE_TITLE (Tag: $TAG_NAME)..."
 
                   if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
                     gh release create "$TAG_NAME" ./"$APK_NAME" \
@@ -124,7 +121,8 @@ jobs:
                       --notes-file release_notes.md \
                       --prerelease
                   else
-                    echo "Release $TAG_NAME đã tồn tại, cập nhật tệp APK..."
+                    echo "Release $TAG_NAME đã tồn tại, cập nhật tệp APK và mô tả mới..."
+                    gh release edit "$TAG_NAME" --notes-file release_notes.md 2>/dev/null || true
                     gh release upload "$TAG_NAME" ./"$APK_NAME" --clobber
                   fi
 
@@ -136,12 +134,8 @@ jobs:
                       V100_APK=$(find v100_extracted -name "*.apk" | head -n 1)
                       if [ -n "$V100_APK" ]; then
                         cp "$V100_APK" ./9Paws-v1.0.0.apk
-                        echo "### 🐾 9Paws Mobile App — v1.0.0" > v100_notes.md
-                        echo "" >> v100_notes.md
-                        echo "Phiên bản đầu tiên của ứng dụng 9Paws Financial Management." >> v100_notes.md
-                        echo "- Xác thực tài khoản Google & Email." >> v100_notes.md
-                        echo "- Quản lý hồ sơ cá nhân và bảo mật sinh trắc học (Fingerprint / Face ID)." >> v100_notes.md
-                        echo "- Tùy chỉnh đa ngôn ngữ (Tiếng Việt / English)." >> v100_notes.md
+                        echo "Tạo mô tả chi tiết cho release v1.0.0..."
+                        python3 .github/scripts/generate-release-notes.py --version "v1.0.0" --output v100_notes.md
                         gh release create "v1.0.0" ./9Paws-v1.0.0.apk \
                           --title "v1.0.0" \
                           --notes-file v100_notes.md \
