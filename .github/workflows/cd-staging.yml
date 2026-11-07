@@ -101,7 +101,6 @@ jobs:
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  # Lấy version từ package.json
                   APP_VERSION=$(node -p "require('./package.json').version")
                   TAG_NAME="v${APP_VERSION}"
                   RELEASE_TITLE="v${APP_VERSION}"
@@ -111,28 +110,24 @@ jobs:
 
                   echo "Publishing release: $RELEASE_TITLE (Tag: $TAG_NAME)..."
 
-                  RELEASE_NOTES="### 🐾 9Paws Mobile App — $RELEASE_TITLE
+                  echo "### 🐾 9Paws Mobile App — $RELEASE_TITLE" > release_notes.md
+                  echo "" >> release_notes.md
+                  echo "**Điểm nổi bật trong bản phát hành:**" >> release_notes.md
+                  echo "- 🎨 Sửa triệt để viền trắng vuông góc quanh avatar/mascot Miu Miu trên toàn bộ ứng dụng." >> release_notes.md
+                  echo "- ⚡ Cải tiến luồng khởi động: loại bỏ màn hình splash tĩnh, chuyển tiếp mượt mà vào splash động." >> release_notes.md
+                  echo "- 📦 Tối ưu hóa dung lượng file APK giảm hơn 50% (từ 57MB xuống ~24.9MB) nhờ nén Hermes bytecode và useLegacyPackaging." >> release_notes.md
 
-**Điểm nổi bật trong bản phát hành:**
-- 🎨 Sửa triệt để viền trắng vuông góc quanh avatar/mascot Miu Miu trên toàn bộ ứng dụng.
-- ⚡ Cải tiến luồng khởi động: loại bỏ màn hình splash tĩnh, chuyển tiếp mượt mà vào splash động.
-- 📦 Tối ưu hóa dung lượng file APK giảm hơn 50% (từ 57MB xuống ~24.9MB) nhờ nén Hermes bytecode và useLegacyPackaging.
-
-📲 **Tải file APK trực tiếp:** [Tải $APK_NAME](https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME})"
-
-                  # Tạo hoặc cập nhật Release với tag vX.Y.Z (không dùng --draft để hiển thị Notes & Downloads)
                   if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
                     gh release create "$TAG_NAME" ./"$APK_NAME" \
                       --target "${{ github.sha }}" \
                       --title "$RELEASE_TITLE" \
-                      --notes "$RELEASE_NOTES" \
+                      --notes-file release_notes.md \
                       --prerelease
                   else
                     echo "Release $TAG_NAME đã tồn tại, cập nhật tệp APK..."
                     gh release upload "$TAG_NAME" ./"$APK_NAME" --clobber
                   fi
 
-                  # Đảm bảo bản release v1.0.0 cũng có tệp APK tải về nếu chưa có
                   if ! gh release view "v1.0.0" >/dev/null 2>&1; then
                     echo "Kiểm tra và tạo release cho v1.0.0 từ artifact lưu trữ..."
                     if gh api "repos/${{ github.repository }}/actions/artifacts/13446218303/zip" > v100_artifact.zip 2>/dev/null; then
@@ -141,16 +136,15 @@ jobs:
                       V100_APK=$(find v100_extracted -name "*.apk" | head -n 1)
                       if [ -n "$V100_APK" ]; then
                         cp "$V100_APK" ./9Paws-v1.0.0.apk
+                        echo "### 🐾 9Paws Mobile App — v1.0.0" > v100_notes.md
+                        echo "" >> v100_notes.md
+                        echo "Phiên bản đầu tiên của ứng dụng 9Paws Financial Management." >> v100_notes.md
+                        echo "- Xác thực tài khoản Google & Email." >> v100_notes.md
+                        echo "- Quản lý hồ sơ cá nhân và bảo mật sinh trắc học (Fingerprint / Face ID)." >> v100_notes.md
+                        echo "- Tùy chỉnh đa ngôn ngữ (Tiếng Việt / English)." >> v100_notes.md
                         gh release create "v1.0.0" ./9Paws-v1.0.0.apk \
                           --title "v1.0.0" \
-                          --notes "### 🐾 9Paws Mobile App — v1.0.0
-
-Phiên bản đầu tiên của ứng dụng 9Paws Financial Management.
-- Xác thực tài khoản Google & Email.
-- Quản lý hồ sơ cá nhân và bảo mật sinh trắc học (Fingerprint / Face ID).
-- Tùy chỉnh đa ngôn ngữ (Tiếng Việt / English).
-
-📲 **Tải file APK trực tiếp:** [Tải 9Paws-v1.0.0.apk](https://github.com/${{ github.repository }}/releases/download/v1.0.0/9Paws-v1.0.0.apk)" \
+                          --notes-file v100_notes.md \
                           --prerelease
                         echo "Đã tạo thành công release v1.0.0 kèm tệp APK."
                       fi
@@ -160,7 +154,6 @@ Phiên bản đầu tiên của ứng dụng 9Paws Financial Management.
                   DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME}"
                   echo "DOWNLOAD_URL=$DOWNLOAD_URL" >> $GITHUB_ENV
                   echo "Direct APK download URL: $DOWNLOAD_URL"
-
             # ------------------------------------------------------------------------
             # LẤY TITLE & DESCRIPTION CỦA PR VỪA MERGE VÀO MAIN & CHUẨN BỊ EMAIL
             # ------------------------------------------------------------------------
