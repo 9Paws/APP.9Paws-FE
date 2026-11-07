@@ -3,6 +3,7 @@ name: CD Staging - Build Lightweight APK & Notify Testers (main)
 on:
     push:
         branches: [main]
+    workflow_dispatch:
 
 jobs:
     staging-pipeline:
@@ -11,6 +12,7 @@ jobs:
         permissions:
             contents: write
             pull-requests: read
+            actions: read
         steps:
             - name: Checkout Code
               uses: actions/checkout@v4
@@ -93,9 +95,9 @@ jobs:
                   retention-days: 14
 
             # ------------------------------------------------------------------------
-            # PHÁT HÀNH DRAFT PRE-RELEASE KÍN (ẨN KHỎI BÊN NGOÀI, CHỈ TESTER MỚI THẤY)
+            # PHÁT HÀNH BẢN GITHUB RELEASE KÈM TỆP APK DOWNLOAD THEO VERSION
             # ------------------------------------------------------------------------
-            - name: Publish Hidden Draft Release & APK Download for Testers
+            - name: Publish Versioned GitHub Release & APK Download
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
@@ -107,19 +109,52 @@ jobs:
 
                   cp ./9Paws-Staging.apk ./"$APK_NAME"
 
-                  echo "Publishing private draft release: $RELEASE_TITLE (Tag: $TAG_NAME)..."
+                  echo "Publishing release: $RELEASE_TITLE (Tag: $TAG_NAME)..."
 
-                  # Tạo hoặc cập nhật Draft Release (hoàn toàn ẩn khỏi người ngoài trên GitHub)
+                  RELEASE_NOTES="### 🐾 9Paws Mobile App — $RELEASE_TITLE
+
+**Điểm nổi bật trong bản phát hành:**
+- 🎨 Sửa triệt để viền trắng vuông góc quanh avatar/mascot Miu Miu trên toàn bộ ứng dụng.
+- ⚡ Cải tiến luồng khởi động: loại bỏ màn hình splash tĩnh, chuyển tiếp mượt mà vào splash động.
+- 📦 Tối ưu hóa dung lượng file APK giảm hơn 50% (từ 57MB xuống ~24.9MB) nhờ nén Hermes bytecode và useLegacyPackaging.
+
+📲 **Tải file APK trực tiếp:** [Tải $APK_NAME](https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME})"
+
+                  # Tạo hoặc cập nhật Release với tag vX.Y.Z (không dùng --draft để hiển thị Notes & Downloads)
                   if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
                     gh release create "$TAG_NAME" ./"$APK_NAME" \
                       --target "${{ github.sha }}" \
                       --title "$RELEASE_TITLE" \
-                      --notes "Bản thử nghiệm nội bộ $RELEASE_TITLE (commit ${{ github.sha }})." \
-                      --draft \
+                      --notes "$RELEASE_NOTES" \
                       --prerelease
                   else
                     echo "Release $TAG_NAME đã tồn tại, cập nhật tệp APK..."
                     gh release upload "$TAG_NAME" ./"$APK_NAME" --clobber
+                  fi
+
+                  # Đảm bảo bản release v1.0.0 cũng có tệp APK tải về nếu chưa có
+                  if ! gh release view "v1.0.0" >/dev/null 2>&1; then
+                    echo "Kiểm tra và tạo release cho v1.0.0 từ artifact lưu trữ..."
+                    if gh api "repos/${{ github.repository }}/actions/artifacts/13446218303/zip" > v100_artifact.zip 2>/dev/null; then
+                      mkdir -p v100_extracted
+                      unzip -o v100_artifact.zip -d v100_extracted
+                      V100_APK=$(find v100_extracted -name "*.apk" | head -n 1)
+                      if [ -n "$V100_APK" ]; then
+                        cp "$V100_APK" ./9Paws-v1.0.0.apk
+                        gh release create "v1.0.0" ./9Paws-v1.0.0.apk \
+                          --title "v1.0.0" \
+                          --notes "### 🐾 9Paws Mobile App — v1.0.0
+
+Phiên bản đầu tiên của ứng dụng 9Paws Financial Management.
+- Xác thực tài khoản Google & Email.
+- Quản lý hồ sơ cá nhân và bảo mật sinh trắc học (Fingerprint / Face ID).
+- Tùy chỉnh đa ngôn ngữ (Tiếng Việt / English).
+
+📲 **Tải file APK trực tiếp:** [Tải 9Paws-v1.0.0.apk](https://github.com/${{ github.repository }}/releases/download/v1.0.0/9Paws-v1.0.0.apk)" \
+                          --prerelease
+                        echo "Đã tạo thành công release v1.0.0 kèm tệp APK."
+                      fi
+                    fi
                   fi
 
                   DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME}"
