@@ -93,9 +93,9 @@ jobs:
                   retention-days: 14
 
             # ------------------------------------------------------------------------
-            # PHÁT HÀNH BẢN RELEASE THEO TAG & VERSION CỦA APP (KÈM FILE APK TẢI TRỰC TIẾP)
+            # PHÁT HÀNH DRAFT PRE-RELEASE KÍN (ẨN KHỎI BÊN NGOÀI, CHỈ TESTER MỚI THẤY)
             # ------------------------------------------------------------------------
-            - name: Publish Versioned Release & APK Download
+            - name: Publish Hidden Draft Release & APK Download for Testers
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
@@ -107,29 +107,20 @@ jobs:
 
                   cp ./9Paws-Staging.apk ./"$APK_NAME"
 
-                  echo "Publishing release: $RELEASE_TITLE (Tag: $TAG_NAME)..."
+                  echo "Publishing private draft release: $RELEASE_TITLE (Tag: $TAG_NAME)..."
 
-                  # 1. Tạo hoặc cập nhật Release chính thức theo tên Tag/Version
+                  # Tạo hoặc cập nhật Draft Release (hoàn toàn ẩn khỏi người ngoài trên GitHub)
                   if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
                     gh release create "$TAG_NAME" ./"$APK_NAME" \
                       --target "${{ github.sha }}" \
                       --title "$RELEASE_TITLE" \
-                      --notes "Phiên bản $RELEASE_TITLE phát hành từ nhánh main (commit ${{ github.sha }})."
+                      --notes "Bản thử nghiệm nội bộ $RELEASE_TITLE (commit ${{ github.sha }})." \
+                      --draft \
+                      --prerelease
                   else
                     echo "Release $TAG_NAME đã tồn tại, cập nhật tệp APK..."
                     gh release upload "$TAG_NAME" ./"$APK_NAME" --clobber
                   fi
-
-                  # 2. Đồng thời duy trì bản rolling 'staging-latest' cho tester nếu cần
-                  gh release delete "staging-latest" --yes --cleanup-tag 2>/dev/null || true
-                  git push origin ":refs/tags/staging-latest" 2>/dev/null || true
-                  git tag -d "staging-latest" 2>/dev/null || true
-                  sleep 2
-                  gh release create "staging-latest" ./9Paws-Staging.apk \
-                    --target "${{ github.sha }}" \
-                    --title "🐾 9Paws Staging (Latest: $RELEASE_TITLE)" \
-                    --notes "Bản thử nghiệm mới nhất ($RELEASE_TITLE) từ nhánh main." \
-                    --prerelease || gh release upload "staging-latest" ./9Paws-Staging.apk --clobber
 
                   DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/${APK_NAME}"
                   echo "DOWNLOAD_URL=$DOWNLOAD_URL" >> $GITHUB_ENV
