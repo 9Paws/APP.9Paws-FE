@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
 
-const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
+const MIU_MIU_IMAGE = require('@/assets/images/miu-miu.png');
 
 export default function LoginScreen() {
   const router = useRouter();

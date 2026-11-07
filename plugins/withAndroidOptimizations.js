@@ -11,7 +11,11 @@ const withAndroidOptimizations = (config) => {
       // Hỗ trợ cả 32-bit (armeabi-v7a) và 64-bit (arm64-v8a), loại bỏ 2 kiến trúc giả lập PC (x86, x86_64)
       { type: 'property', key: 'reactNativeArchitectures', value: 'armeabi-v7a,arm64-v8a' },
       // Giữ useLegacyPackaging=false để tương thích chuẩn Android 9/10/11/12/13/14 (tránh lỗi invalid package)
-      { type: 'property', key: 'expo.useLegacyPackaging', value: 'false' },
+      { type: 'property', key: 'expo.useLegacyPackaging', value: 'true' },
+      // Tat bo giai ma WebP goc cua React Native (app dung expo-image toi uu hon, tiet kiem ~5MB .so)
+      { type: 'property', key: 'expo.webp.enabled', value: 'false' },
+      // Bat nen JS bundle cua Hermes
+      { type: 'property', key: 'android.enableBundleCompression', value: 'true' },
       // Tắt bộ giải mã GIF gốc của React Native (app dùng expo-image tối ưu hơn)
       { type: 'property', key: 'expo.gif.enabled', value: 'false' },
       // Kích hoạt dọn dẹp tài nguyên thừa (XML, drawables không dùng)
@@ -65,7 +69,7 @@ const withAndroidOptimizations = (config) => {
     // Tối ưu packagingOptions: loại bỏ debug symbols và các metadata thừa
     const targetLegacy = 'useLegacyPackaging enableLegacyPackaging.toBoolean()';
     if (content.includes(targetLegacy)) {
-      const replacementPackaging = `useLegacyPackaging false
+      const replacementPackaging = `useLegacyPackaging true
             keepDebugSymbols = []
         }
         resources {
@@ -80,7 +84,10 @@ const withAndroidOptimizations = (config) => {
                 "META-INF/*.kotlin_module",
                 "**/libjscexecutor.so",
                 "**/libjsc.so",
-                "**/README.txt"
+                "**/README.txt",
+                "META-INF/*.md",
+                "META-INF/INDEX.LIST",
+                "META-INF/proguard/*"
             ]`;
       content = content.replace(targetLegacy, replacementPackaging);
     }

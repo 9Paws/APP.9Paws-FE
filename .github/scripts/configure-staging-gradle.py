@@ -64,7 +64,7 @@ if "abiFilters" not in content:
 # 5. Tối ưu packagingOptions: giữ useLegacyPackaging false để tương thích chuẩn Android, loại bỏ debug symbols
 target_legacy = "useLegacyPackaging enableLegacyPackaging.toBoolean()"
 if target_legacy in content:
-    replacement_packaging = """useLegacyPackaging false
+    replacement_packaging = """useLegacyPackaging true
             keepDebugSymbols = []
         }
         resources {
@@ -79,7 +79,10 @@ if target_legacy in content:
                 "META-INF/*.kotlin_module",
                 "**/libjscexecutor.so",
                 "**/libjsc.so",
-                "**/README.txt"
+                "**/README.txt",
+                "META-INF/*.md",
+                "META-INF/INDEX.LIST",
+                "META-INF/proguard/*"
             ]"""
     content = content.replace(target_legacy, replacement_packaging)
     print("Optimized packagingOptions: compatible packaging and stripped metadata.")
@@ -112,7 +115,9 @@ if os.path.exists(gradle_properties_path):
     props = re.sub(r"reactNativeArchitectures=.*", "reactNativeArchitectures=armeabi-v7a,arm64-v8a", props)
 
     # (B) useLegacyPackaging=false để không bị lỗi Package Invalid trên Android 9/10/11+
-    props = re.sub(r"expo\.useLegacyPackaging=.*", "expo.useLegacyPackaging=false", props)
+    props = re.sub(r"expo\.useLegacyPackaging=.*", "expo.useLegacyPackaging=true", props)
+    # Tat bo giai ma WebP goc cua React Native (tiet kiem ~5MB .so)
+    props = re.sub(r"expo\.webp\.enabled=.*", "expo.webp.enabled=false", props)
 
     # (C) Tắt GIF native decoder thừa
     props = re.sub(r"expo\.gif\.enabled=.*", "expo.gif.enabled=false", props)
@@ -137,6 +142,7 @@ org.gradle.jvmargs=-Xmx4608m -XX:MaxMetaspaceSize=1024m -XX:+UseParallelGC -Dfil
 android.enablePngCrunchInReleaseBuilds=true
 android.enableR8.fullMode=true
 android.enableResourceOptimizations=true
+android.enableBundleCompression=true
 """
     props += optimizations
 

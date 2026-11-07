@@ -40,7 +40,7 @@ import { getItem, setItem } from '@/lib/secure-storage';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { EditProfileSkeleton } from '@/components/ui/Skeleton';
 
-const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
+const MIU_MIU_IMAGE = require('@/assets/images/miu-miu.png');
 
 const AVATAR_OPTIONS = [
   { id: '🐱', label: 'Miu Miu' },
@@ -365,7 +365,7 @@ export default function EditProfileScreen() {
                 {isImageUri(selectedAvatar) ? (
                   <Image
                     source={{ uri: selectedAvatar }}
-                    style={{ width: 96, height: 96 }}
+                    style={{ width: 96, height: 96, borderRadius: 48 }}
                     resizeMode="cover"
                   />
                 ) : selectedAvatar && selectedAvatar !== '🐱' ? (
