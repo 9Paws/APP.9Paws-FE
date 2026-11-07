@@ -52,7 +52,7 @@ import { GoogleIcon } from '@/components/ui/GoogleIcon';
 import { AnimatedSwitch } from '@/components/ui/AnimatedSwitch';
 import { ProfileSkeleton } from '@/components/ui/Skeleton';
 
-const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
+const MIU_MIU_IMAGE = require('@/assets/images/miu-miu.png');
 
 const isImageUri = (uri?: string | null) => {
   if (!uri) return false;
@@ -535,7 +535,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
             <View className="h-10 w-10 items-center justify-center rounded-full overflow-hidden bg-amber-100 border border-amber-200">
               {isImageUri(user?.avatarUrl) ? (
-                <Image source={{ uri: user!.avatarUrl! }} style={{ width: 40, height: 40 }} resizeMode="cover" />
+                <Image source={{ uri: user!.avatarUrl! }} style={{ width: 40, height: 40, borderRadius: 20 }} resizeMode="cover" />
               ) : user?.avatarUrl && user.avatarUrl !== '🐱' ? (
                 <Text className="text-xl">{user.avatarUrl}</Text>
               ) : (
@@ -549,7 +549,7 @@ export default function ProfileScreen() {
         <View className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex-row items-center mb-6">
           <View className="h-16 w-16 rounded-full overflow-hidden bg-amber-100 items-center justify-center border-2 border-amber-200 mr-3.5">
             {isImageUri(user?.avatarUrl) ? (
-              <Image source={{ uri: user!.avatarUrl! }} style={{ width: 64, height: 64 }} resizeMode="cover" />
+              <Image source={{ uri: user!.avatarUrl! }} style={{ width: 64, height: 64, borderRadius: 32 }} resizeMode="cover" />
             ) : user?.avatarUrl && user.avatarUrl !== '🐱' ? (
               <Text className="text-3xl">{user.avatarUrl}</Text>
             ) : (

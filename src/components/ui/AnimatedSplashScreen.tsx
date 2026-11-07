@@ -12,7 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 
-const MIU_MIU_IMAGE = require('@/assets/images/icon.png');
+const MIU_MIU_IMAGE = require('@/assets/images/miu-miu.png');
 const { width } = Dimensions.get('window');
 
 interface AnimatedSplashScreenProps {
