@@ -52,3 +52,14 @@ __pycache__/
 *.pyc
 *.pyo
 .idea/
+
+# Claude Code (local state and personal overrides)
+.claude/settings.local.json
+.claude/state.json
+.claude.json
+CLAUDE.local.md
+*.local.md
+.claude/cache/
+.claude/logs/
+.claude/history/
+.claude/transcripts/
